@@ -59,6 +59,15 @@ def get_attractions(city):
 
                 except Exception as e:
                     attraction[title]['image'] = 'N/A'
+    results = []
+    for name, info in attraction.items():
+        results.append({
+                    "name": name,
+                    "url": info['url'],
+                    "image": info['image']
+                })
+
+    return results
 
 
             # full_url = base_url + href
@@ -90,25 +99,25 @@ def get_attractions(city):
             #         data['image_url'] = "N/A"
             #         data['coordinates'] = "N/A"
 #OLD STUFF
-    if attractions:
-        print(f"\n🎯 Attractions found for {city.title()}:\n")
-        for name in sorted(attractions):
-            print(f"- {name}")
-    else:
-        print(f"⚠️ No attractions found on the Wikipedia page for {city}")
-
-    for name, info in attraction.items():
-        print(f"🏛️ {name}")
-        print(f"   🔗 URL: {info['url']}")
-        print(f"   🖼️ Image: {info['image']}")
-        print()
+    # if attractions:
+    #     print(f"\n🎯 Attractions found for {city.title()}:\n")
+    #     for name in sorted(attractions):
+    #         print(f"- {name}")
+    # else:
+    #     print(f"⚠️ No attractions found on the Wikipedia page for {city}")
+    #
+    # for name, info in attraction.items():
+    #     print(f"🏛️ {name}")
+    #     print(f"   🔗 URL: {info['url']}")
+    #     print(f"   🖼️ Image: {info['image']}")
+    #     print()
 
 
 # ✅ Example use:
-#get_attractions("Edmonton")
+get_attractions("Edmonton")
 #get_attractions("Calgary")
 # get_attractions("Toronto")
 # get_attractions("Madrid")
 # get_attractions("New York City")
 # get_attractions("Vancouver")
-get_attractions("Brussels")
+#get_attractions("Brussels")
