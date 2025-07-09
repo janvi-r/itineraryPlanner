@@ -1,10 +1,58 @@
-
-import React from 'react';
+import { NavigationContainer } from '@react-navigation/native';
+import { createDrawerNavigator } from '@react-navigation/drawer';
+import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import TripApp from './screens/homeScreen';
 import HomeScreen from './screens/attractionChoice';
+import ProfileScreen from './screens/profileScreen';
+import * as React from 'react';
+import SidebarNavigator from './screens/sidebar2'; // adjust the path if needed
+
+const Drawer = createDrawerNavigator();
+const Stack = createNativeStackNavigator();
+
+function HomeStack() {
+  return (
+    <Stack.Navigator initialRouteName="TripApp" id={}>
+      <Stack.Screen name="TripApp" component={TripApp} options={{ headerShown: false }} />
+      <Stack.Screen name="attractionChoice" component={HomeScreen} />
+      <Stack.Screen name="profileScreen" component={ProfileScreen} />
+    </Stack.Navigator>
+  );
+}
 
 export default function App() {
-  return <HomeScreen />;
+  return (
+    <NavigationContainer>
+      <SidebarNavigator />
+    </NavigationContainer>
+  );
 }
+
+
+// import React from 'react';
+// import TripApp from './screens/homeScreen';
+// import HomeScreen from './screens/attractionChoice';
+// import { NavigationContainer } from '@react-navigation/native';
+// import {createNativeStackNavigator} from "@react-navigation/native-stack";
+// import ProfileScreen from './screens/profileScreen';
+// const Stack = createNativeStackNavigator();
+// import { createDrawerNavigator } from '@react-navigation/drawer';
+// const Drawer = createDrawerNavigator();
+//
+//
+//
+//
+// export default function App({navigation}) {
+//   return (
+//       <NavigationContainer>
+//       <Stack.Navigator initialRouteName="Home">
+//         <Stack.Screen name="Home" component={TripApp} />
+//         <Stack.Screen name="attractionChoice" component={HomeScreen} />
+//         <Stack.Screen name="profileScreen" component={ProfileScreen} />
+//       </Stack.Navigator>
+//     </NavigationContainer>
+//     );
+// }
 
 // import React, { useRef, useState, useEffect } from 'react';
 // import {

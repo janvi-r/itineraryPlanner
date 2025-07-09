@@ -1,4 +1,4 @@
-# import requests
+import requests
 # from bs4 import BeautifulSoup
 # import time
 # import wikipedia
@@ -132,8 +132,22 @@ def merge_images(map_url, img_url):
         return None
 
 
-def getAttractionImages(infobox_src):
-    pass
+def getAttractionImages(sub_soup, infobox_src):
+    img_urls = []
+    infobox = sub_soup.find('table', class_='infobox')
+    if infobox:
+        image_tags = infobox.select(infobox_src)
+        for img in image_tags:
+            img_url = img.get('src')
+            if img_url:
+                # if not (img_url.endswith("Red_pog.svg.png") or img_url.endswith(map_url)):
+                if img_url.startswith('//'):
+                    img_url = 'https:' + img_url
+                img_urls.append(img_url)
+    else:
+        img_urls.append('N/A')
+
+    return img_urls
 
 
 def get_attractions(city):
@@ -200,21 +214,14 @@ def get_attractions(city):
                 rejected_list.append(f"{title} (matched: {matched_keyword})")
                 continue
 
-            img_urls = []
+            img_urls = getAttractionImages(sub_soup,'.infobox-image img')
+            img_urls2 = getAttractionImages(sub_soup,'.mw-file-description img')
+            print(full_url, img_urls)
+            print(img_urls2)
+            combinedImgUrls = img_urls + img_urls2
+
             #getAttractionImages(infobox_src)
             #images = sub_soup.select('.infobox .infobox-image img')
-            infobox = sub_soup.find('table', class_='infobox')
-            if infobox:
-                image_tags = infobox.select('.infobox-image img')
-                for img in image_tags:
-                    img_url = img.get('src')
-                    if img_url:
-                    #if not (img_url.endswith("Red_pog.svg.png") or img_url.endswith(map_url)):
-                        if img_url.startswith('//'):
-                            img_url = 'https:' + img_url
-                        img_urls.append(img_url)
-            else:
-                img_urls.append('N/A')
             # images = sub_soup.select('.infobox .infobox-image img')
             # if images:
             #     for i in range(len(images)):
@@ -229,7 +236,7 @@ def get_attractions(city):
 
             attraction[title] = {
                 'url': full_url,
-                'images': img_urls
+                'images': combinedImgUrls
             }
 
         except Exception as e:
