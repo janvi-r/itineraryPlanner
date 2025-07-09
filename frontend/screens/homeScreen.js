@@ -72,8 +72,9 @@ const TripApp = ({navigation}) => {
             <View style={styles.bottomNav}>
                 <TouchableOpacity
                     style={styles.iconContainer}
-                    onPress={() => navigation.openDrawer()}>
-                    <Text style={styles.icon}>≡</Text>
+                    onPress={() => navigation.navigate('SidebarNavigator')}>
+
+                    <Text style={styles.icon}>🏠</Text>
                 </TouchableOpacity>
                 <TouchableOpacity
                     style={styles.iconContainer}
