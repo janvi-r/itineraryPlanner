@@ -16,7 +16,6 @@ const SWIPE_THRESHOLD = 0.25 * SCREEN_WIDTH;
 const SwipeCard = ({ data, onSwipeRight, onSwipeLeft }) => {
   const position = useRef(new Animated.ValueXY()).current;
 
-  // Filter out invalid image URLs (e.g., 'N/A', empty strings)
   const validImages = data.images ? data.images.filter(url => url && url !== 'N/A') : [];
 
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
@@ -115,7 +114,7 @@ const styles = StyleSheet.create({
   card: {
     position: 'absolute',
     width: SCREEN_WIDTH * 0.9,
-    height: 450,
+    height: 500,
     backgroundColor: 'white',
     borderRadius: 10,
     alignItems: 'center',
@@ -128,12 +127,11 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
   },
   image: {
-    width: 250,     // or '100%' depending on container
-    height: 200,    // must have height too
+    width: 400,     // or '100%' depending on container
+    height: 400,    // must have height too
     resizeMode: 'cover',
   },
   counterText: {
-    fontSize: 14,
     color: '#666',
     marginTop: 5,
   },

@@ -182,7 +182,7 @@ def get_attractions(city):
     approved_list = []
     map_url = "https://upload.wikimedia.org/wikipedia/commons/thumb/1/1a/Edmonton_agglomeration-blank.svg/250px-Edmonton_agglomeration-blank.svg.png"
     for a in soup.find_all('a', href=True, title=True):
-        if len(attraction) >= 30:
+        if len(attraction) >= 10:
             break
         href = a['href']
         title = a['title']
@@ -270,7 +270,7 @@ def is_relevant(title):
     return any(keyword in title_lower for keyword in keywords)
 
 
-print(get_attractions("Edmonton"))
+#print(get_attractions("Edmonton"))
 #print(get_attractions("Calgary"))
 #print(get_attractions("Toronto"))
 # get_attractions("Madrid")

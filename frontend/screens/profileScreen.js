@@ -24,7 +24,7 @@ const ProfileScreen = () => {
                 <TouchableOpacity
                     style={styles.iconContainer}
                     onPress={() => navigation.navigate('Test')}>
-                    <Text style={styles.icon}>≡</Text>
+                    <Text style={styles.icon}>🏠</Text>
                 </TouchableOpacity>
                 <TouchableOpacity
                     style={styles.iconContainer}
@@ -57,7 +57,7 @@ const ProfileScreen = () => {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: '#222',
+        backgroundColor: '#dcdcdc',
         justifyContent: 'space-between',
     },
     placeholder: {
@@ -72,7 +72,7 @@ const styles = StyleSheet.create({
         marginTop: "-145%",
     },
     placeholderCard: {
-        backgroundColor: '#333',
+        backgroundColor: 'silver',
         borderRadius: 8,
         width: "92%",
         height: "110%",

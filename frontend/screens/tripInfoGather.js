@@ -12,7 +12,7 @@ const tripDataGathering = () => {
         <TouchableOpacity
           style={styles.iconContainer}
           onPress={() => navigation.navigate('Test')}>
-          <Text style={styles.icon}>≡</Text>
+          <Text style={styles.icon}>🏠</Text>
         </TouchableOpacity>
         <TouchableOpacity
           style={styles.iconContainer}

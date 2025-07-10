@@ -4,12 +4,6 @@ import React, { useState, useEffect } from 'react';
 import {View, Text, StyleSheet, TouchableOpacity, SafeAreaView, Button, ImageBackground} from 'react-native';
 
 
-// const images = [
-//   require('/Users/janvi/PycharmProjects/itineraryPlanner/frontend/hawaii.jpg.avif'),
-//   require('/Users/janvi/PycharmProjects/itineraryPlanner/frontend/nyc.jpg'),
-//   require('/Users/janvi/PycharmProjects/itineraryPlanner/frontend/italy.jpg'),
-// ];
-
 const slides = [
   {
     image: require('/Users/janvi/PycharmProjects/itineraryPlanner/frontend/hawaii.jpg.avif'),
@@ -36,7 +30,7 @@ const TripApp = ({navigation}) => {
     return () => clearInterval(interval);
   }, []);
     return (
-        <SafeAreaView style={styles.container}>
+        <ImageBackground style={styles.container}>
 
             {/* Main Content */}
             <View style={styles.mainContent}>
@@ -59,20 +53,20 @@ const TripApp = ({navigation}) => {
                 </View>
             </View>
 
-
-            <View style={styles.bottomBigcard}>
+<ImageBackground
+            source = {require('/Users/janvi/PycharmProjects/itineraryPlanner/frontend/images/sunset.jpg')}
+            style={styles.bottomBigcard}
+  imageStyle={{ borderRadius: 8 }}
+        >
                 <Text style={styles.message}>Your Trip Awaits You!</Text>
-            </View>
-
-            <View style={styles.companyTitleBox}>
-                <Text style={styles.companyName}>Triply</Text>
-            </View>
-
+    </ImageBackground>
 
             <View style={styles.bottomNav}>
                 <TouchableOpacity
                     style={styles.iconContainer}
-                    onPress={() => navigation.navigate('SidebarNavigator')}>
+                    onPress={() => navigation.navigate('SidebarNavigator')}
+                >
+
 
                     <Text style={styles.icon}>🏠</Text>
                 </TouchableOpacity>
@@ -88,7 +82,7 @@ const TripApp = ({navigation}) => {
                 </TouchableOpacity>
             </View>
 
-        </SafeAreaView>
+        </ImageBackground>
     );
 };
 
@@ -100,14 +94,13 @@ const styles = StyleSheet.create({
     },
 
     cardOverlay: {
-        backgroundColor: 'rgba(0,0,0,0.3)', // optional for text readability
         padding: 15,
         borderRadius: 10,
     },
 
     container: {
         flex: 1,
-        backgroundColor: '#222',
+        backgroundColor: '#dcdcdc',
         justifyContent: 'space-between',
     },
     mainContent: {
@@ -121,7 +114,8 @@ const styles = StyleSheet.create({
         marginTop: -380,
     },
     card: {
-        backgroundColor: '#333',
+        backgroundColor: 'silver',
+
         borderRadius: 8,
         padding: 20,
         width: 185,
@@ -135,6 +129,9 @@ const styles = StyleSheet.create({
         textAlign: 'center',
         fontSize: 24,
         fontWeight: 'bold',
+        fontFamily: 'AvenirNext-Regular', // or add a custom Google Font via Expo
+letterSpacing: 0.5,
+
     },
     bottomBigcard: {
         position: 'absolute',
@@ -143,7 +140,7 @@ const styles = StyleSheet.create({
         backgroundColor: '#333',
         borderRadius: 8,
         padding: 20,
-        height: 500,
+        height: 380,
         width: 390,
         marginTop: 0,
     },
@@ -151,8 +148,10 @@ const styles = StyleSheet.create({
         marginTop: 30,
         fontSize: 24,
         fontWeight: 'bold',
-        color: 'white',
         textAlign: 'center',
+        fontFamily: 'AvenirNext-Regular', // or add a custom Google Font via Expo
+        letterSpacing: 0.5,
+        color: 'midnightblue'
     },
     companyTitleBox: {
         position: 'absolute',
@@ -161,12 +160,18 @@ const styles = StyleSheet.create({
         marginLeft: 25,
         marginTop: 65,
         marginVertical: 20,
+        fontFamily: 'AvenirNext-Regular', // or add a custom Google Font via Expo
+        letterSpacing: 0.5,
     },
     companyName: {
         fontSize: 24,
         fontWeight: 'bold',
         color: 'white', // or any color
+        fontFamily: 'AvenirNext-Regular', // or add a custom Google Font via Expo
+letterSpacing: 0.5,
+
     },
+
     bottomNav: {
         flexDirection: 'row',
         justifyContent: 'space-around',
@@ -176,10 +181,11 @@ const styles = StyleSheet.create({
     },
     iconContainer: {
         alignItems: 'center',
+
     },
     icon: {
         fontSize: 24,
-        color: 'white',
+        color: 'black'
     },
 });
 
