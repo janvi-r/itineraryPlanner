@@ -7,7 +7,7 @@ const SCREEN_WIDTH = Dimensions.get('window').width;
 const HomeScreen = () => {
   const [city, setCity] = useState('');
   const [cards, setCards] = useState([]);
-  const [savedList, setSavedList] = useState([]); // ✅ use state to track saved items
+  const [savedList, setSavedList] = useState([]);
 
   const fetchAttractions = async () => {
     try {
