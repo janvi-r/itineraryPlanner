@@ -9,7 +9,7 @@ BASE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
 if BASE_DIR not in sys.path:
     sys.path.insert(0, BASE_DIR)
 
-os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'myproject.myproject.settings')
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'settings')
 
 django.setup()
 
@@ -174,7 +174,7 @@ def get_attractions(city_name):
         for name, info in attraction.items()
     ]
 
-print(get_attractions("Seattle"))
+#print(get_attractions("Calgary"))
 
 
 # import requests
