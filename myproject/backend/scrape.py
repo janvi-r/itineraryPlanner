@@ -4,12 +4,19 @@ from PIL import Image
 from io import BytesIO
 import os
 import django
+import sys
+BASE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
+if BASE_DIR not in sys.path:
+    sys.path.insert(0, BASE_DIR)
 
-os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'backend.settings')  # Adjust if your settings module path is different
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'myproject.myproject.settings')
+
 django.setup()
 
-from models import City, Attraction
+from backend.models import City, Attraction
+
 from django.db import transaction
+
 
 
 def merge_images(map_url, img_url):
@@ -167,7 +174,7 @@ def get_attractions(city_name):
         for name, info in attraction.items()
     ]
 
-print(get_attractions("Edmonton"))
+print(get_attractions("Seattle"))
 
 
 # import requests
