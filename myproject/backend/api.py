@@ -2,6 +2,8 @@ from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.concurrency import run_in_threadpool
 from scrape import get_attractions  # Django-dependent function
+from cityVerifier import find_closest_city
+
 
 app = FastAPI()
 
@@ -23,3 +25,13 @@ async def attractions(city: str):
         return data
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error fetching attractions: {str(e)}")
+
+@app.get("/cityVerifier/")
+async def cityVerifier(city: str):
+    try:
+        cityMatch = await run_in_threadpool(find_closest_city, city)
+        if cityMatch is None:
+            raise HTTPException(status_code=404, detail="No city found.")
+        return {"match": cityMatch}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error fetching city: {str(e)}")

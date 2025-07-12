@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, {useEffect, useState} from 'react';
 import {View, Text, StyleSheet, TextInput, TouchableOpacity, Dimensions, ScrollView, Button} from 'react-native';
 import SwipeCard from '../components/swipeCard';
 
@@ -8,6 +8,33 @@ const HomeScreen = () => {
   const [city, setCity] = useState('');
   const [cards, setCards] = useState([]);
   const [savedList, setSavedList] = useState([]);
+  const [suggestedCity, setSuggestedCity] = useState(null);
+
+  useEffect(() => {
+  if (!city) {
+    setSuggestedCity(null);
+    return;
+  }
+
+  // Wait 500ms after typing before verifying
+  const timeout = setTimeout(() => {
+    fetch(`http://192.168.1.205:8000/cityVerifier?city=${encodeURIComponent(city)}`)
+      .then(response => response.json())
+      .then(data => {
+        if (data.match && data.match.toLowerCase() !== city.toLowerCase()) {
+          setSuggestedCity(data.match);
+        } else {
+          setSuggestedCity(null);
+        }
+      })
+      .catch(error => {
+        console.error("Error verifying city:", error);
+        setSuggestedCity(null);
+      });
+  }, 500);
+
+  return () => clearTimeout(timeout);
+}, [city]);
 
   const fetchAttractions = async () => {
     try {
@@ -49,6 +76,15 @@ const HomeScreen = () => {
           <Text style={styles.buttonText}>Search</Text>
         </TouchableOpacity>
       </View>
+      {suggestedCity && (
+  <TouchableOpacity onPress={() => setCity(suggestedCity)}>
+    <Text style={{ color: 'blue', marginTop: 6 }}>
+      Did you mean: <Text style={{ fontWeight: 'bold' }}>{suggestedCity}</Text>?
+    </Text>
+  </TouchableOpacity>
+)}
+
+
     </>
   ) : (
     <Text style={styles.title}>{city}</Text> // show city only

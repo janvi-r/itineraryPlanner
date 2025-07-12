@@ -60,6 +60,15 @@ def is_relevant(title):
     title_lower = title.lower()
     return any(keyword in title_lower for keyword in keywords)
 
+
+def getCityCoordinates(city_name, sub_soup):
+    lat = sub_soup.find('span', class_='latitude')
+    lon = sub_soup.find('span', class_='longitude')
+
+    return lat, lon
+
+
+
 def get_attractions(city_name):
     # ✅ Step 1: Check if city is already cached in DB
     city = City.objects.filter(name__iexact=city_name).first()
@@ -118,6 +127,15 @@ def get_attractions(city_name):
             try:
                 res = requests.get(full_url)
                 sub_soup = BeautifulSoup(res.content, 'html.parser')
+                
+                if title == city_name:
+                    city_lat, city_lon = getCityCoordinates(city_name, sub_soup)
+                    return
+                    city[title] = {
+                        'lat': city_lat,
+                        'lon': city_lon
+                    }
+                    continue
 
                 subheaders = sub_soup.select('.infobox-subheader')
                 subheader_texts = [tag.text.strip().lower() for tag in subheaders]
@@ -136,9 +154,7 @@ def get_attractions(city_name):
 
                 latOG = sub_soup.find('span', class_='latitude')
                 lonOG = sub_soup.find('span', class_='longitude')
-                # print(".text",latOG.text, lonOG.text)
-                # print(latOG, lonOG)
-                #
+
                 lat = str(latOG.text)
                 lon = str(lonOG.text)
                 #
@@ -160,6 +176,7 @@ def get_attractions(city_name):
                 }
 
 
+
             except Exception as e:
                 print(f"Error fetching page for {title}: {e}")
 
@@ -167,7 +184,6 @@ def get_attractions(city_name):
         with transaction.atomic():
             city = City.objects.create(name=city_name)
             for name, info in attraction.items():
-                print(f"Saving attraction: {name}, lat: {lat}, lon: {lon}")
                 Attraction.objects.create(
                     city=city,
                     name=name,
@@ -189,7 +205,7 @@ def get_attractions(city_name):
             for name, info in attraction.items()
         ]
 
-print(get_attractions("Edmonton"))
+#print(get_attractions("Edmonton"))
 
 
 # import requests

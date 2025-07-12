@@ -5,8 +5,6 @@ import { View, Text, StyleSheet, TouchableOpacity, SafeAreaView, Button } from '
 const tripDataGathering = () => {
   return (
     <SafeAreaView style={styles.container}>
-
-
       {/*bottom nav bar*/}
       <View style={styles.bottomNav}>
         <TouchableOpacity

@@ -17,3 +17,20 @@ class Attraction(models.Model):
 
     class Meta:
         app_label = 'backend'
+
+#class User(models.Model):
+class User(models.Model):
+    firstName = models.CharField(max_length=100)
+    lastName = models.CharField(max_length=100)
+    email = models.EmailField()
+    username = models.CharField(max_length=100)
+    password = models.CharField(max_length=100)
+    birthday = models.DateField()
+
+class Registration(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='profile')
+    avatar = models.ImageField(default='default.jpg', upload_to='profile_images')
+    favorite_cities = models.ManyToManyField(City, related_name='favorited_by')
+    past_trips = models.TextField(blank=True, null=True)
+    userName = models.CharField(max_length=200, null=True, blank=True)
+    userEmail = models.CharField(max_length=200, null=True, blank=True)
