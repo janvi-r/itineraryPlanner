@@ -106,8 +106,8 @@ def get_attractions(city_name):
         map_url = "https://upload.wikimedia.org/wikipedia/commons/thumb/1/1a/Edmonton_agglomeration-blank.svg/250px-Edmonton_agglomeration-blank.svg.png"
 
         for a in soup.find_all('a', href=True, title=True):
-            if len(attraction) >= 10:
-                break
+            # if len(attraction) >= 10:
+            #     break
             href = a['href']
             title = a['title']
 
@@ -136,17 +136,17 @@ def get_attractions(city_name):
 
                 latOG = sub_soup.find('span', class_='latitude')
                 lonOG = sub_soup.find('span', class_='longitude')
-                print(".text",latOG.text, lonOG.text)
-                print(latOG, lonOG)
-
+                # print(".text",latOG.text, lonOG.text)
+                # print(latOG, lonOG)
+                #
                 lat = str(latOG.text)
                 lon = str(lonOG.text)
-                
-                print(lat)
-                print(lon)
-
-                if lat and lon:
-                    print(f"✅ {title} — lat: {lat.text}, lon: {lon.text}")
+                #
+                # print(lat)
+                # print(lon)
+                #
+                # if lat and lon:
+                #     print(f"✅ {title} — lat: {lat.text}, lon: {lon.text}")
 
                 img_urls = getAttractionImages(sub_soup, '.infobox-image img')
                 img_urls2 = getAttractionImages(sub_soup, '.mw-file-description img')
