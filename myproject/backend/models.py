@@ -12,6 +12,8 @@ class Attraction(models.Model):
     name = models.CharField(max_length=200)
     url = models.URLField()
     image_urls = models.JSONField()  # stores list of image URLs
+    lat = models.CharField(max_length=200, null=True, blank=True)  # ✅ properly declared
+    lon = models.CharField(max_length=200, null=True, blank=True)
 
     class Meta:
         app_label = 'backend'

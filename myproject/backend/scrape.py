@@ -10,14 +10,9 @@ if BASE_DIR not in sys.path:
     sys.path.insert(0, BASE_DIR)
 
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'settings')
-
 django.setup()
-
 from backend.models import City, Attraction
-
 from django.db import transaction
-
-
 
 def merge_images(map_url, img_url):
     try:
@@ -74,107 +69,127 @@ def get_attractions(city_name):
             {
                 "name": a.name,
                 "url": a.url,
-                "images": a.image_urls
+                "images": a.image_urls,
+                'lat': a.lat,
+                'lon': a.lon
             } for a in city.attractions.all()
         ]
+    else:
 
-    # ✅ Step 2: Scrape data from Wikipedia
-    print(f"🌐 Scraping Wikipedia for {city_name}")
-    base_url = "https://en.wikipedia.org/wiki/"
-    city_formatted = city_name.replace(" ", "_")
-    url_candidates = [
-        f"{base_url}List_of_tourist_attractions_in_{city_formatted}",
-        f"{base_url}Tourism_in_{city_formatted}",
-        f"{base_url}{city_formatted}"
-    ]
+        # ✅ Step 2: Scrape data from Wikipedia
+        print(f"🌐 Scraping Wikipedia for {city_name}")
+        base_url = "https://en.wikipedia.org/wiki/"
+        city_formatted = city_name.replace(" ", "_")
+        url_candidates = [
+            f"{base_url}List_of_tourist_attractions_in_{city_formatted}",
+            f"{base_url}Tourism_in_{city_formatted}",
+            f"{base_url}{city_formatted}"
+        ]
 
-    soup = None
-    for url in url_candidates:
-        print(f"🔍 Trying: {url}")
-        try:
-            response = requests.get(url)
-            if response.status_code == 200:
-                soup = BeautifulSoup(response.content, 'html.parser')
+        soup = None
+        for url in url_candidates:
+            print(f"🔍 Trying: {url}")
+            try:
+                response = requests.get(url)
+                if response.status_code == 200:
+                    soup = BeautifulSoup(response.content, 'html.parser')
+                    break
+            except:
+                continue
+
+        if soup is None:
+            print(f"❌ Could not fetch a valid page for {city_name}")
+            return []
+
+        attraction = {}
+        rejected_list = []
+        map_url = "https://upload.wikimedia.org/wikipedia/commons/thumb/1/1a/Edmonton_agglomeration-blank.svg/250px-Edmonton_agglomeration-blank.svg.png"
+
+        for a in soup.find_all('a', href=True, title=True):
+            if len(attraction) >= 10:
                 break
-        except:
-            continue
+            href = a['href']
+            title = a['title']
 
-    if soup is None:
-        print(f"❌ Could not fetch a valid page for {city_name}")
-        return []
-
-    attraction = {}
-    rejected_list = []
-    map_url = "https://upload.wikimedia.org/wikipedia/commons/thumb/1/1a/Edmonton_agglomeration-blank.svg/250px-Edmonton_agglomeration-blank.svg.png"
-
-    for a in soup.find_all('a', href=True, title=True):
-        if len(attraction) >= 10:
-            break
-        href = a['href']
-        title = a['title']
-
-        if not (href.startswith('/wiki/') and ':' not in href):
-            continue
-
-        full_url = "https://en.wikipedia.org" + href
-        try:
-            res = requests.get(full_url)
-            sub_soup = BeautifulSoup(res.content, 'html.parser')
-
-            subheaders = sub_soup.select('.infobox-subheader')
-            subheader_texts = [tag.text.strip().lower() for tag in subheaders]
-            keywords = ['country', 'province', 'state', 'city', 'borough', 'county',
-                        'municipality', 'settlement type', 'states', 'list', 'wikipedia', 'content']
-
-            if any(kw in subheader_texts for kw in keywords):
-                print(f"❌ Rejected '{title}' — matched keyword in subheaders")
-                rejected_list.append(title)
+            if not (href.startswith('/wiki/') and ':' not in href):
                 continue
 
-            if not is_relevant(title):
-                print(f"❌ Rejected '{title}' — not a relevant attraction")
-                rejected_list.append(title)
-                continue
+            full_url = "https://en.wikipedia.org" + href
+            try:
+                res = requests.get(full_url)
+                sub_soup = BeautifulSoup(res.content, 'html.parser')
 
-            lat = sub_soup.find('span', class_='latitude')
-            lon = sub_soup.find('span', class_='longitude')
-            if lat and lon:
-                print(f"✅ {title} — lat: {lat.text}, lon: {lon.text}")
+                subheaders = sub_soup.select('.infobox-subheader')
+                subheader_texts = [tag.text.strip().lower() for tag in subheaders]
+                keywords = ['country', 'province', 'state', 'city', 'borough', 'county',
+                            'municipality', 'settlement type', 'states', 'list', 'wikipedia', 'content']
 
-            img_urls = getAttractionImages(sub_soup, '.infobox-image img')
-            img_urls2 = getAttractionImages(sub_soup, '.mw-file-description img')
-            combinedImgUrls = img_urls + img_urls2
+                if any(kw in subheader_texts for kw in keywords):
+                    print(f"❌ Rejected '{title}' — matched keyword in subheaders")
+                    rejected_list.append(title)
+                    continue
 
-            attraction[title] = {
-                'url': full_url,
-                'images': combinedImgUrls
+                if not is_relevant(title):
+                    print(f"❌ Rejected '{title}' — not a relevant attraction")
+                    rejected_list.append(title)
+                    continue
+
+                latOG = sub_soup.find('span', class_='latitude')
+                lonOG = sub_soup.find('span', class_='longitude')
+                print(".text",latOG.text, lonOG.text)
+                print(latOG, lonOG)
+
+                lat = str(latOG.text)
+                lon = str(lonOG.text)
+                
+                print(lat)
+                print(lon)
+
+                if lat and lon:
+                    print(f"✅ {title} — lat: {lat.text}, lon: {lon.text}")
+
+                img_urls = getAttractionImages(sub_soup, '.infobox-image img')
+                img_urls2 = getAttractionImages(sub_soup, '.mw-file-description img')
+                combinedImgUrls = img_urls + img_urls2
+
+                attraction[title] = {
+                    'url': full_url,
+                    'images': combinedImgUrls,
+                    'lat': lat,
+                    'lon': lon
+                }
+
+
+            except Exception as e:
+                print(f"Error fetching page for {title}: {e}")
+
+        # ✅ Step 3: Save to database
+        with transaction.atomic():
+            city = City.objects.create(name=city_name)
+            for name, info in attraction.items():
+                print(f"Saving attraction: {name}, lat: {lat}, lon: {lon}")
+                Attraction.objects.create(
+                    city=city,
+                    name=name,
+                    url=info['url'],
+                    image_urls=info['images'],
+                    lat=info['lat'],
+                    lon=info['lon']
+                )
+
+        print(f"✅ Saved {len(attraction)} attractions for {city_name}")
+        return [
+            {
+                "name": name,
+                "url": info["url"],
+                "images": info["images"],
+                'lat': lat,
+                'lon': lon
             }
+            for name, info in attraction.items()
+        ]
 
-        except Exception as e:
-            print(f"Error fetching page for {title}: {e}")
-
-    # ✅ Step 3: Save to database
-    with transaction.atomic():
-        city = City.objects.create(name=city_name)
-        for name, info in attraction.items():
-            Attraction.objects.create(
-                city=city,
-                name=name,
-                url=info['url'],
-                image_urls=info['images']
-            )
-
-    print(f"✅ Saved {len(attraction)} attractions for {city_name}")
-    return [
-        {
-            "name": name,
-            "url": info["url"],
-            "images": info["images"]
-        }
-        for name, info in attraction.items()
-    ]
-
-#print(get_attractions("Calgary"))
+print(get_attractions("Edmonton"))
 
 
 # import requests
