@@ -1,4 +1,5 @@
-fetch(`/api/city/${cityId}/`)
+fetch(`http://192.168.1.205:8000/api/city/${encodeURIComponent(city)}/`)
+
   .then(res => res.json())
   .then(data => {
     const map = L.map('map').setView([parseFloat(data.city.lat), parseFloat(data.city.lon)], 12);
@@ -15,7 +16,7 @@ fetch(`/api/city/${cityId}/`)
       sizeModes: ['Current']
     }).addTo(map);
 
-    L.marker([data.city.lat, data.city.lon])
+    L.marker([data.city_lat, data.city_lon])
       .addTo(map)
       .bindPopup(`${data.city.name} center`);
 

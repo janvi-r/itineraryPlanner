@@ -63,7 +63,7 @@ const HomeScreen = () => {
 
   const handleDone = () => {
     if (!city) return;
-    navigation.navigate('Map', { cityId: city });
+    navigation.navigate('Map', { cityName: city });
   };
 
   return (
