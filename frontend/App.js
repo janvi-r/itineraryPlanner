@@ -9,14 +9,15 @@ import {AboutScreen, ContactScreen} from './screens/sidebar2';
 const Stack = createNativeStackNavigator();
 const Drawer = createDrawerNavigator();
 import CreateAccount from './screens/createAccount';
+import MapScreen from "./screens/MapScreen";
 
 // Drawer navigator with screens inside the drawer
 function MyDrawer() {
   return (
-    // <Drawer.Navigator initialRouteName="TripApp">
-    //   <Drawer.Screen name="TripApp" component={TripApp} options={{ title: 'Home' }} />
-         <Drawer.Navigator initialRouteName="CreateAccount">
-      <Drawer.Screen name="CreateAccount" component={CreateAccount} options={{ title: 'Home' }} />
+    <Drawer.Navigator initialRouteName="TripApp">
+      <Drawer.Screen name="TripApp" component={TripApp} options={{ title: 'Home' }} />
+      {/*   <Drawer.Navigator initialRouteName="CreateAccount">*/}
+      {/*<Drawer.Screen name="CreateAccount" component={CreateAccount} options={{ title: 'Home' }} />*/}
       <Drawer.Screen name="About" component={AboutScreen} />
       <Drawer.Screen name="Contact" component={ContactScreen} />
     </Drawer.Navigator>
@@ -33,6 +34,7 @@ export default function App() {
         />
         <Stack.Screen name="attractionChoice" component={HomeScreen} />
         <Stack.Screen name="profileScreen" component={ProfileScreen} />
+        <Stack.Screen name="Map" component={MapScreen} />
       </Stack.Navigator>
     </NavigationContainer>
   );
