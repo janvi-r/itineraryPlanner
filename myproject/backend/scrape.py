@@ -5,6 +5,7 @@ from io import BytesIO
 import os
 import django
 import sys
+import re
 BASE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
 if BASE_DIR not in sys.path:
     sys.path.insert(0, BASE_DIR)
@@ -13,6 +14,31 @@ os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'settings')
 django.setup()
 from backend.models import City, Attraction
 from django.db import transaction
+
+def dms_to_dd(dms_str):
+    """
+    Convert DMS string like '51°07′48″N' or '113°57′09″W' to decimal degrees float.
+    """
+    if not dms_str:
+        return None
+
+    # Pattern captures degrees, minutes, seconds, and direction
+    pattern = r"(\d+)°(\d+)′(\d+)″?([NSEW])"
+    match = re.match(pattern, dms_str.strip())
+    if not match:
+        return None
+
+    degrees = int(match.group(1))
+    minutes = int(match.group(2))
+    seconds = int(match.group(3))
+    direction = match.group(4)
+
+    dd = degrees + minutes / 60 + seconds / 3600
+
+    if direction in ['S', 'W']:
+        dd = -dd
+
+    return dd
 
 def merge_images(map_url, img_url):
     try:
@@ -129,8 +155,8 @@ def get_attractions(city_name):
                 
                 if title == city_name:
                     city_lat, city_lon = getCityCoordinates(city_name, sub_soup)
-                    city_lat = str(city_lat.text)
-                    city_lon = str(city_lon.text)
+                    lat_dd = dms_to_dd(str(city_lat.text))
+                    lon_dd = dms_to_dd(str(city_lon.text))
 
                 subheaders = sub_soup.select('.infobox-subheader')
                 subheader_texts = [tag.text.strip().lower() for tag in subheaders]
@@ -150,8 +176,8 @@ def get_attractions(city_name):
                 latOG = sub_soup.find('span', class_='latitude')
                 lonOG = sub_soup.find('span', class_='longitude')
 
-                lat = str(latOG.text)
-                lon = str(lonOG.text)
+                lat = dms_to_dd(str(latOG.text))
+                lon = dms_to_dd(str(lonOG.text))
 
                 img_urls = getAttractionImages(sub_soup, '.infobox-image img')
                 img_urls2 = getAttractionImages(sub_soup, '.mw-file-description img')
@@ -162,8 +188,8 @@ def get_attractions(city_name):
                     'images': combinedImgUrls,
                     'lat': lat,
                     'lon': lon,
-                    'city_lat': city_lat,
-                    'city_lon': city_lon
+                    'city_lat': lat_dd,
+                    'city_lon': lon_dd
 
                 }
             except Exception as e:
@@ -173,8 +199,8 @@ def get_attractions(city_name):
         with transaction.atomic():
             city = City.objects.create(
                 name=city_name,
-                citylat=city_lat,
-                citylon=city_lon,
+                citylat=lat_dd,
+                citylon=lon_dd,
             )
             for name, info in attraction.items():
                 Attraction.objects.create(
@@ -194,8 +220,8 @@ def get_attractions(city_name):
                 "images": info["images"],
                 'lat': lat,
                 'lon': lon,
-                'city_lat': city_lat,
-                'city_lon': city_lon
+                'city_lat': lat_dd,
+                'city_lon': lon_dd
             }
             for name, info in attraction.items()
         ]

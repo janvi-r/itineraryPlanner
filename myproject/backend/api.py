@@ -35,3 +35,29 @@ async def cityVerifier(city: str):
         return {"match": cityMatch}
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error fetching city: {str(e)}")
+
+@app.get("/api/city/{city_name}/")
+async def get_city(city_name: str):
+    try:
+        # Use Django ORM wrapped in threadpool
+        attractions_data = await run_in_threadpool(get_attractions, city_name)
+
+        if not attractions_data:
+            raise HTTPException(status_code=404, detail="City or attractions not found.")
+
+        # Assuming get_attractions returns list of attractions with city info inside first item
+        # You might want to structure it properly here:
+        city_info = {
+            "name": city_name,
+            "lat": attractions_data[0].get('city_lat', None),
+            "lon": attractions_data[0].get('city_lon', None),
+        }
+
+        return {
+            "city": city_info,
+            "attractions": attractions_data
+        }
+
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error fetching city info: {str(e)}")
+

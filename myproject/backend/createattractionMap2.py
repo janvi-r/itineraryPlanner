@@ -4,6 +4,7 @@ from backend.models import City, Attraction
 
 def city_data(request, city_name):
     try:
+        print(f"city_name received: '{city_name}'")
         city = City.objects.get(name=city_name)
         attractions = Attraction.objects.filter(city=city)
         return JsonResponse({

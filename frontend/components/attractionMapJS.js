@@ -16,7 +16,8 @@ fetch(`http://192.168.1.205:8000/api/city/${encodeURIComponent(city)}/`)
       sizeModes: ['Current']
     }).addTo(map);
 
-    L.marker([data.city_lat, data.city_lon])
+    L.marker([data.city.lat, data.city.lon])
+
       .addTo(map)
       .bindPopup(`${data.city.name} center`);
 
