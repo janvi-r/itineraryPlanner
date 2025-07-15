@@ -1,7 +1,7 @@
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework import status
-from .serializer import UserSerializer
+from backend.serializer import UserSerializer
 
 @api_view(['POST'])
 def create_user(request):
@@ -11,32 +11,36 @@ def create_user(request):
         return Response(serializer.data, status=status.HTTP_201_CREATED)
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+from rest_framework.decorators import api_view
+from rest_framework.response import Response
+from rest_framework import status
+from backend.models import User, City, Attraction, PastTrips
 
-# from django.shortcuts import render
-# from django.http import JsonResponse
-# #from myproject.backend.models import City, Attraction
-#
-# def map_view(request, city_name):
-#     return render(request, 'map.html', {'city_name': city_name})
-#
-#
-# def city_data(request, city_name):
-#     try:
-#         city = City.objects.get(name=city_name)
-#         attractions = Attraction.objects.filter(city=city)
-#         return JsonResponse({
-#             'city': {
-#                 'name': city.name,
-#                 'lat': city.citylat,
-#                 'lon': city.citylon
-#             },
-#             'attractions': [
-#                 {
-#                     'name': a.name,
-#                     'lat': a.lat,
-#                     'lon': a.lon
-#                 } for a in attractions
-#             ]
-#         })
-#     except City.DoesNotExist:
-#         return JsonResponse({'error': 'City not found'}, status=404)
+@api_view(['POST'])
+def save_past_trip(request):
+    try:
+        username = request.data.get('username')
+        city_name = request.data.get('city')
+        attraction_names = request.data.get('attractions', [])
+
+        user = User.objects.get(username=username)
+        city = City.objects.get(name__iexact=city_name)
+        trip, created = PastTrips.objects.get_or_create(user=user, city=city)
+
+        for name in attraction_names:
+            try:
+                attraction = Attraction.objects.get(name=name, city=city)
+                trip.attractions.add(attraction)
+            except Attraction.DoesNotExist:
+                continue
+
+        trip.save()
+        return Response({'status': 'success', 'trip_id': trip.id}, status=status.HTTP_201_CREATED)
+
+    except User.DoesNotExist:
+        return Response({'status': 'error', 'detail': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
+    except City.DoesNotExist:
+        return Response({'status': 'error', 'detail': 'City not found'}, status=status.HTTP_404_NOT_FOUND)
+    except Exception as e:
+        return Response({'status': 'error', 'detail': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+

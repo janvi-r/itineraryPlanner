@@ -1,4 +1,4 @@
-fetch(`http://192.168.1.205:8000/api/city/${encodeURIComponent(city)}/`)
+fetch(`http://192.168.1.205:8000/api/city/${encodeURIComponent(city)}/?user=${encodeURIComponent(username)}`)
 
   .then(res => res.json())
   .then(data => {

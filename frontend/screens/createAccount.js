@@ -8,9 +8,9 @@ const CreateAccount = () => {
       const [username, setUsername] = useState("");
       const [password, setPassword] = useState("");
       const [confirmPassword, setConfirmPassword] = useState("");
-        const [month, setMonth] = useState('');
-        const [day, setDay] = useState('');
-        const [year, setYear] = useState('');
+      const [month, setMonth] = useState('');
+      const [day, setDay] = useState('');
+      const [year, setYear] = useState('');
 
     const months = [
             'January', 'February', 'March', 'April', 'May', 'June',
@@ -64,6 +64,7 @@ const CreateAccount = () => {
       username,
       password,
       birthday,
+      avatar
     };
 
     try {

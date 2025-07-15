@@ -61,10 +61,35 @@ const HomeScreen = () => {
     setCards(prev => prev.slice(1));
   };
 
-  const handleDone = () => {
-    if (!city) return;
-    navigation.navigate('Map', { cityName: city });
-  };
+const handleDone = async () => {
+  if (!city || savedList.length === 0) return;
+
+  try {
+    const response = await fetch('http://192.168.1.205:8000/api/save_trip/', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        username: 'janvi',  // replace with your logged-in user's actual username
+        city: city,
+        attractions: savedList  // array of attraction names saved by user
+      }),
+    });
+
+    const result = await response.json();
+
+    if (result.status === 'success') {
+      alert('Trip saved successfully!');
+      setSavedList([]);  // Clear saved list after saving
+      navigation.navigate('Map', { cityName: city });  // Navigate to Map screen
+    } else {
+      alert('Failed to save trip: ' + result.detail);
+    }
+  } catch (e) {
+    alert('Network error: ' + e.message);
+  }
+};
+
+
 
   return (
     <View style={styles.container}>
