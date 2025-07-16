@@ -80,7 +80,7 @@ const handleDone = async () => {
     if (result.status === 'success') {
       alert('Trip saved successfully!');
       setSavedList([]);  // Clear saved list after saving
-      navigation.navigate('Map', { cityName: city });  // Navigate to Map screen
+      navigation.navigate('Map', { cityName: city, selectedAttractions: savedList });
     } else {
       alert('Failed to save trip: ' + result.detail);
     }

@@ -3,11 +3,8 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.concurrency import run_in_threadpool
 from scrape import get_attractions  # Django-dependent function
 from cityVerifier import find_closest_city
-from views import save_past_trip  # You’ll write this Django helper
 from pydantic import BaseModel
 from typing import List
-
-
 app = FastAPI()
 
 # CORS setup (same)
@@ -71,13 +68,28 @@ class TripSubmission(BaseModel):
     city: str
     attractions: List[str]  # List of attraction names
 
-@app.post("/api/save_trip/")
-async def save_trip(data: TripSubmission):
-    try:
-        print(f"📥 Received save request for {data.username}, city={data.city}, attractions={data.attractions}")
-        result = await run_in_threadpool(save_past_trip, data.username, data.city, data.attractions)
-        return {"status": "success", "trip_id": result.id}
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Error saving trip: {str(e)}")
+from fastapi import APIRouter, Request
+from backend.utils import save_trip_logic
 
+@app.post("/api/save_trip/")
+async def save_trip(request: Request):
+    data = await request.json()
+    trip = await save_trip_logic(data['username'], data['city'], data['attractions'])
+    return {"status": "success", "trip_id": trip.id}
+
+
+
+
+
+from backend.utils import get_saved_trip_data
+@app.get("/api/saved_trip_attractions/{city_name}/{username}/")
+async def saved_trip_attractions(city_name: str, username: str):
+    print(f"Received request for city: {city_name}, user: {username}")
+    try:
+        data = await get_saved_trip_data(username, city_name)
+        print(f"Returning data for user '{username}' and city '{city_name}': {data}")
+        return data
+    except Exception as e:
+        print(f"Error in saved_trip_attractions: {e}")
+        raise HTTPException(status_code=404, detail=str(e))
 

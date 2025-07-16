@@ -5,19 +5,34 @@ import MapView, { Marker } from 'react-native-maps';
 const SCREEN_WIDTH = Dimensions.get('window').width;
 
 const MapScreen = ({ route }) => {
-  const { cityName } = route.params;
+  const { cityName, selectedAttractions } = route.params;
   const [city, setCity] = useState(null);
   const [attractions, setAttractions] = useState([]);
 
-  useEffect(() => {
-    fetch(`http://192.168.1.205:8000/api/city/${encodeURIComponent(cityName)}/`)
-      .then(res => res.json())
-      .then(data => {
-        setCity(data.city);
-        setAttractions(data.attractions);
-      })
-      .catch(error => console.error("Map fetch error:", error));
-  }, [cityName]);
+
+    useEffect(() => {
+  const username = 'janvi';
+  fetch(`http://192.168.1.205:8000/api/saved_trip_attractions/${encodeURIComponent(cityName)}/${encodeURIComponent(username)}/`)
+    .then(res => {
+      console.log('Fetch response status:', res.status);
+      return res.json();
+    })
+    .then(data => {
+      console.log('Fetched data:', data);
+      setCity(data.city);
+      setAttractions(data.attractions);
+    })
+    .catch(error => {
+      console.error("Map fetch error:", error);
+    });
+}, [cityName]);
+
+// In render, before return
+console.log('Current city state:', city);
+console.log('Current attractions state:', attractions);
+
+
+
 
   if (!city) return null;
 
@@ -40,14 +55,19 @@ const MapScreen = ({ route }) => {
         />
 
         {/* Attraction Markers */}
-        {attractions.map((a, index) => (
-          <Marker
-            key={index}
-            coordinate={{ latitude: parseFloat(a.lat), longitude: parseFloat(a.lon) }}
-            title={a.name}
-            description={a.url}
-          />
-        ))}
+        {/* Attraction Markers */}
+{attractions
+  .filter(a => a.lat && a.lon)  // only attractions with valid lat and lon
+  .map((a, index) => (
+    <Marker
+      key={index}
+      coordinate={{ latitude: parseFloat(a.lat), longitude: parseFloat(a.lon) }}
+      title={a.name}
+      description={a.url}
+    />
+  ))
+}
+
       </MapView>
     </View>
   );
