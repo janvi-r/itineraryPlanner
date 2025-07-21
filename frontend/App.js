@@ -20,6 +20,9 @@ function MyDrawer() {
       {/*<Drawer.Screen name="CreateAccount" component={CreateAccount} options={{ title: 'Home' }} />*/}
       <Drawer.Screen name="About" component={AboutScreen} />
       <Drawer.Screen name="Contact" component={ContactScreen} />
+      <Drawer.Screen name="Profile" component={ProfileScreen} />
+
+
     </Drawer.Navigator>
   );
 }
