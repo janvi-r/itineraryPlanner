@@ -2,7 +2,6 @@ import React, {useEffect, useState} from 'react';
 import MapView, {Callout, Marker} from 'react-native-maps';
 import {View, StyleSheet, Dimensions, Button, Text, Image} from 'react-native';
 
-
 const SCREEN_WIDTH = Dimensions.get('window').width;
 
 const MapScreen = ({route}) => {
@@ -13,10 +12,6 @@ const MapScreen = ({route}) => {
     const [pressedAttractions, setPressedAttractions] = useState([]);
     const [attractionDays, setAttractionDays] = useState([]);
     const [currentDay, setCurrentDay] = useState(1);
-    // const validImages = data.images ? data.images.filter(url => url && url !== 'N/A') : [];
-    // const [currentImageIndex, setCurrentImageIndex] = useState(0);
-
-
 
     useEffect(() => {
         const username = 'janvi';
@@ -93,31 +88,37 @@ const MapScreen = ({route}) => {
 
                 {/* Attraction Markers */}
                 {attractions.filter(a => a.lat && a.lon)
-                    .map((a, index) => (
-
-                       <Marker
-                          key={index}
-                          coordinate={{ latitude: parseFloat(a.lat), longitude: parseFloat(a.lon) }}
-                          title={a.name}
-                          onPress={() => handleMarkerPress(a)}
-                        >
-                          <Callout>
-                            <View style={{ width: 40, height: 40 }}>
-                              <Image
-                                source={{ uri: a.image }}
-                                style={styles.image}
-                              />
-                              <Text>{a.name}</Text>
-                            </View>
-                          </Callout>
-                        </Marker>
+                    .map((a, index) => {
+                        console.log('Image URL:', a.image_urls[0]);
 
 
-                            // description={a.url}
-                             // Remove marker when pressed
+                        return (
+                            <Marker
+                                key={index}
+                                coordinate={{latitude: parseFloat(a.lat), longitude: parseFloat(a.lon)}}
+                                title={a.name}
 
+                                // onPress={() => handleMarkerPress(a)}
+                            >
 
-                    ))}
+                                <Callout>
+                                    <View style={styles.calloutContainer}>
+                                        <Text style={styles.calloutTitle}>{a.name}</Text>
+                                        {a.image_urls?.length > 0 && a.image_urls[0] !== 'N/A' ? (
+                                            <Image
+                                                source={{uri: a.image_urls[0]}}
+                                                style={{width: 30, height: 30}}
+                                            />
+                                        ) : (
+                                            <Text>No Image</Text>
+                                        )}
+                                    </View>
+                                </Callout>
+
+                            </Marker>
+                        );
+                    })}
+
             </MapView>
             <Text>Currently selecting for Day {currentDay} of {3}</Text>
             <View style={styles.buttonsRow}>
@@ -156,7 +157,23 @@ const styles = StyleSheet.create({
         width: 400,     // or '100%' depending on container
         height: 400,    // must have height too
         resizeMode: 'cover',
-  },
+    },
+    calloutContainer: {
+        width: 200,
+        alignItems: 'center',
+    },
+    calloutTitle: {
+        fontSize: 16,
+        fontWeight: 'bold',
+        marginBottom: 5,
+    },
+    calloutImage: {
+        width: 180,
+        height: 120,
+        resizeMode: 'cover',
+    }
+
+
 });
 export default MapScreen;
 // // import React, { useEffect, useState } from 'react';
