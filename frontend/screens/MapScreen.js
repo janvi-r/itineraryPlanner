@@ -5,7 +5,8 @@ import {View, StyleSheet, Dimensions, Button, Text, Image} from 'react-native';
 const SCREEN_WIDTH = Dimensions.get('window').width;
 
 const MapScreen = ({route}) => {
-    const {cityName, selectedAttractions} = route.params;
+    const { username } = route.params;
+const { cityName, selectedAttractions } = route?.params || {};
     const [city, setCity] = useState(null);
     const [attractions, setAttractions] = useState([]);
     const [removedMarkers, setRemovedMarkers] = useState([]); // Track removed marker
@@ -14,7 +15,6 @@ const MapScreen = ({route}) => {
     const [currentDay, setCurrentDay] = useState(1);
 
     useEffect(() => {
-        const username = 'janvi';
         fetch(`http://192.168.1.205:8000/api/saved_trip_attractions/${encodeURIComponent(cityName)}/${encodeURIComponent(username)}/`)
             .then(res => {
                 console.log('Fetch response status:', res.status);
@@ -89,7 +89,7 @@ const MapScreen = ({route}) => {
                 {/* Attraction Markers */}
                 {attractions.filter(a => a.lat && a.lon)
                     .map((a, index) => {
-                        console.log('Image URL:', a.image_urls[0]);
+                        // console.log('Image URL:', a.image_urls[0]);
 
 
                         return (
@@ -98,7 +98,7 @@ const MapScreen = ({route}) => {
                                 coordinate={{latitude: parseFloat(a.lat), longitude: parseFloat(a.lon)}}
                                 title={a.name}
 
-                                // onPress={() => handleMarkerPress(a)}
+                                onPress={() => handleMarkerPress(a)}
                             >
 
                                 <Callout>

@@ -1,10 +1,18 @@
-from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.concurrency import run_in_threadpool
 from scrape import get_attractions  # Django-dependent function
 from cityVerifier import find_closest_city
-from pydantic import BaseModel
 from typing import List
+from backend.models import UserProfile  # or wherever your UserProfile is
+from fastapi import FastAPI, HTTPException
+from pydantic import BaseModel
+from django.contrib.auth.models import User
+from fastapi.concurrency import run_in_threadpool
+from fastapi import FastAPI
+from django.contrib.auth import authenticate
+
+from datetime import date  # ✅ Needed for date parsing
+
+
 app = FastAPI()
 
 # CORS setup (same)
@@ -14,6 +22,61 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+
+
+
+class UserCreate(BaseModel):
+    username: str
+    password: str
+    email: str
+    first_name: str
+    last_name: str
+    birthday: date
+import httpx
+
+import httpx
+
+
+
+# app = FastAPI()
+#
+# class UserCreate(BaseModel):
+#     username: str
+#     password: str
+#     email: str
+#     first_name: str
+#     last_name: str
+class LoginData(BaseModel):
+    username: str
+    password: str
+
+@app.post("/api/login/")
+async def login(data: LoginData):
+    def auth_user():
+        user = authenticate(username=data.username, password=data.password)
+        if not user:
+            raise HTTPException(status_code=401, detail="Invalid username or password")
+        # You can generate a token here or just return success
+        return {"username": user.username}
+
+    return await run_in_threadpool(auth_user)
+
+@app.post("/api/register/")
+async def register_user(user: UserCreate):
+    def create_user():
+        user_obj = User.objects.create_user(
+            username=user.username,
+            email=user.email,
+            first_name=user.first_name,
+            last_name=user.last_name,
+            password=user.password,
+        )
+        UserProfile.objects.create(user=user_obj, birthday=user.birthday)
+        return user_obj  # make sure this is here
+
+    user_obj = await run_in_threadpool(create_user)  # get user_obj here
+    return {"message": f"User {user_obj.username} created successfully"}
 
 @app.get("/attractions/")
 async def attractions(city: str):
@@ -76,9 +139,6 @@ async def save_trip(request: Request):
     data = await request.json()
     trip = await save_trip_logic(data['username'], data['city'], data['attractions'])
     return {"status": "success", "trip_id": trip.id}
-
-
-
 
 
 from backend.utils import get_saved_trip_data

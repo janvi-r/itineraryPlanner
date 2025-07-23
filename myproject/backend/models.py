@@ -1,4 +1,6 @@
 from django.db import models
+from django.contrib.auth.models import User
+
 
 class City(models.Model):
     name = models.CharField(max_length=200)
@@ -19,17 +21,29 @@ class Attraction(models.Model):
     class Meta:
      app_label = 'backend'
 
-class User(models.Model):
-    firstName = models.CharField(max_length=100)
-    lastName = models.CharField(max_length=100)
-    email = models.EmailField()
-    username = models.CharField(max_length=100)
-    password = models.CharField(max_length=100)
-    birthday = models.DateField()
+
+class UserProfile(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='profile')
+    birthday = models.DateField(null=True, blank=True)
     avatar = models.ImageField(default='default.jpg', upload_to='profile_images')
+
+    def __str__(self):
+        return self.user.username
 
 class PastTrips(models.Model):  #aka Saved Trips
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='past_trips')
     city = models.ForeignKey(City, on_delete=models.CASCADE, related_name='saved_trips')
     attractions = models.ManyToManyField(Attraction, blank=True, related_name='saved_in_trips')
+
+
+
+# class User(models.Model):
+#     firstName = models.CharField(max_length=100)
+#     lastName = models.CharField(max_length=100)
+#     email = models.EmailField()
+#     username = models.CharField(max_length=100)
+#     password = models.CharField(max_length=100)
+#     birthday = models.DateField()
+#     avatar = models.ImageField(default='default.jpg', upload_to='profile_images')
+#
 

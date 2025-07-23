@@ -5,7 +5,9 @@ import { useNavigation } from '@react-navigation/native';
 
 const SCREEN_WIDTH = Dimensions.get('window').width;
 
-const HomeScreen = () => {
+const HomeScreen = ({route}) => {
+    const { username } = route.params;
+
   const [city, setCity] = useState('');
   const [cards, setCards] = useState([]);
   const [savedList, setSavedList] = useState([]);
@@ -69,7 +71,7 @@ const handleDone = async () => {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        username: 'janvi',  // replace with your logged-in user's actual username
+        username: username,  // replace with your logged-in user's actual username
         city: city,
         attractions: savedList  // array of attraction names saved by user
       }),
@@ -80,7 +82,7 @@ const handleDone = async () => {
     if (result.status === 'success') {
       alert('Trip saved successfully!');
       setSavedList([]);  // Clear saved list after saving
-      navigation.navigate('Map', { cityName: city, selectedAttractions: savedList });
+      navigation.navigate('Map', { cityName: city, selectedAttractions: savedList, username});
     } else {
       alert('Failed to save trip: ' + result.detail);
     }

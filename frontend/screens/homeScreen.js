@@ -19,8 +19,9 @@ const slides = [
   },
 ];
 
-const TripApp = ({navigation}) => {
+const TripApp = ({navigation, route}) => {
   const [currentIndex, setCurrentIndex] = useState(0);
+  const { username } = route.params;
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -72,7 +73,7 @@ const TripApp = ({navigation}) => {
                 </TouchableOpacity>
                 <TouchableOpacity
                     style={styles.iconContainer}
-                    onPress={() => navigation.navigate('attractionChoice')}>
+                    onPress={() => navigation.navigate('attractionChoice', {username})}>
                     <Text style={styles.icon}>＋</Text>
                 </TouchableOpacity>
                 <TouchableOpacity

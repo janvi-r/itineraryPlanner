@@ -6,6 +6,7 @@ import os
 import django
 import sys
 import re
+
 BASE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
 if BASE_DIR not in sys.path:
     sys.path.insert(0, BASE_DIR)
@@ -60,7 +61,7 @@ def merge_images(map_url, img_url):
         print(f"Error merging images: {e}")
         return None
 
-def getAttractionImages(sub_soup, infobox_src):
+def getAttractionImages(sub_soup, infobox_src, map_url, dot_url):
     img_urls = []
     infobox = sub_soup.find('table', class_='infobox')
     if infobox:
@@ -70,9 +71,8 @@ def getAttractionImages(sub_soup, infobox_src):
             if img_url:
                 if img_url.startswith('//'):
                     img_url = 'https:' + img_url
-                img_urls.append(img_url)
-    else:
-        img_urls.append('N/A')
+                if img_url != map_url and img_url != dot_url:
+                    img_urls.append(img_url)
     return img_urls
 
 def is_relevant(title):
@@ -138,7 +138,7 @@ def get_attractions(city_name):
         attraction = {}
         rejected_list = []
         map_url = "https://upload.wikimedia.org/wikipedia/commons/thumb/1/1a/Edmonton_agglomeration-blank.svg/250px-Edmonton_agglomeration-blank.svg.png"
-
+        dot_url = "https://upload.wikimedia.org/wikipedia/commons/thumb/0/0c/Red_pog.svg/20px-Red_pog.svg.png"
         for a in soup.find_all('a', href=True, title=True):
             # if len(attraction) >= 10:
             #     break
@@ -176,12 +176,17 @@ def get_attractions(city_name):
                 latOG = sub_soup.find('span', class_='latitude')
                 lonOG = sub_soup.find('span', class_='longitude')
 
+                if latOG is None or lonOG is None:
+                    print(f"❌ Skipping '{title}' — no coordinates found")
+                    rejected_list.append(title)
+                    continue
+
                 lat = dms_to_dd(str(latOG.text))
                 lon = dms_to_dd(str(lonOG.text))
 
-                img_urls = getAttractionImages(sub_soup, '.infobox-image img')
-                img_urls2 = getAttractionImages(sub_soup, '.mw-file-description img')
-                combinedImgUrls = img_urls + img_urls2
+                img_urls = getAttractionImages(sub_soup, '.infobox-image img', map_url, dot_url)
+                img_urls2 = getAttractionImages(sub_soup, 'a.mw-file-description img', map_url, dot_url)
+                combinedImgUrls = list(set(img_urls + img_urls2))
 
                 attraction[title] = {
                     'url': full_url,
@@ -226,4 +231,4 @@ def get_attractions(city_name):
             for name, info in attraction.items()
         ]
 
-#print(get_attractions("Calgary"))
+#print(get_attractions("Edmonton"))

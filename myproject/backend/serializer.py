@@ -1,7 +1,18 @@
+from django.contrib.auth.models import User
 from rest_framework import serializers
-from .models import User
+from backend.models import UserProfile
 
-class UserSerializer(serializers.ModelSerializer):
+class UserCreateSerializer(serializers.ModelSerializer):
+    birthday = serializers.DateField(write_only=True)  # add birthday here
+
     class Meta:
         model = User
-        fields = '__all__'  # or list them explicitly if needed
+        fields = ['id', 'username', 'email', 'first_name', 'last_name', 'password', 'birthday']
+        extra_kwargs = {'password': {'write_only': True}}
+
+    def create(self, validated_data):
+        birthday = validated_data.pop('birthday')
+        user = User.objects.create_user(**validated_data)
+        UserProfile.objects.create(user=user, birthday=birthday)  # create profile with birthday
+        return user
+
