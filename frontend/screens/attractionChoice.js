@@ -13,6 +13,7 @@ const HomeScreen = ({route}) => {
   const [savedList, setSavedList] = useState([]);
   const [suggestedCity, setSuggestedCity] = useState(null);
   const navigation = useNavigation();
+  const [days, setDays] = useState(0);
 
   useEffect(() => {
     if (!city) {
@@ -90,9 +91,6 @@ const handleDone = async () => {
     alert('Network error: ' + e.message);
   }
 };
-
-
-
   return (
     <View style={styles.container}>
       {cards.length === 0 && savedList.length === 0 ? (
@@ -104,6 +102,15 @@ const handleDone = async () => {
               style={styles.input}
               value={city}
               onChangeText={setCity}
+            />
+          </View>
+          <View style={styles.searchContainer}>
+            <TextInput
+              placeholder="How many days is your trip?"
+              style={styles.input}
+              value={days.toString()}
+              onChangeText={(text) => setDays(Number(text))}
+              keyboardType="numeric"
             />
             <TouchableOpacity onPress={fetchAttractions} style={styles.button}>
               <Text style={styles.buttonText}>Search</Text>
@@ -136,25 +143,24 @@ const handleDone = async () => {
             }
             return null;
           }).reverse()
+        ) : savedList.length > 0 ? (
+          <ScrollView contentContainerStyle={styles.resultContainer}>
+            <Text style={styles.savedTitle}>Saved Attractions:</Text>
+            {savedList.map((name, index) => (
+              <Text key={index} style={styles.savedItem}>• {name}</Text>
+            ))}
+            <View style={{ marginTop: 20 }}>
+              <Button title="Done Choosing Attractions" onPress={handleDone} />
+            </View>
+          </ScrollView>
         ) : (
-          savedList.length > 0 ? (
-            <ScrollView contentContainerStyle={styles.resultContainer}>
-              <Text style={styles.savedTitle}>Saved Attractions:</Text>
-              {savedList.map((name, index) => (
-                <Text key={index} style={styles.savedItem}>• {name}</Text>
-              ))}
-              <View style={{ marginTop: 20 }}>
-                <Button title="Done Choosing Attractions" onPress={handleDone} />
-              </View>
-            </ScrollView>
-          ) : (
-            <Text style={styles.savedTitle}>No results yet. Search for a city!</Text>
-          )
+          <Text style={styles.savedTitle}>No results yet. Search for a city!</Text>
         )}
       </View>
     </View>
   );
 };
+
 
 const styles = StyleSheet.create({
   container: {
@@ -182,7 +188,11 @@ const styles = StyleSheet.create({
     paddingHorizontal: 14,
     justifyContent: 'center',
   },
-  buttonText: { color: 'white', fontWeight: '600' },
+  buttonText:  {
+    color: 'white',
+    fontWeight: 600,
+  },
+
   cardContainer: {
     flex: 1,
     width: SCREEN_WIDTH,

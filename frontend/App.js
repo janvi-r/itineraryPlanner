@@ -11,36 +11,39 @@ const Drawer = createDrawerNavigator();
 import CreateAccount from './screens/createAccount';
 import MapScreen from "./screens/MapScreen";
 import Login from './screens/Login';
+import attractionChoice from "./screens/attractionChoice";
 
 // Drawer navigator with screens inside the drawer
-function MyDrawer() {
+function MyDrawer({route}) {
+      // const { username } = route.params;
+      const username = route?.params?.username;
+
+
   return (
-    // <Drawer.Navigator initialRouteName="TripApp">
-    //   <Drawer.Screen name="TripApp" component={TripApp} options={{ title: 'Home' }} />
-    //      <Drawer.Navigator initialRouteName="CreateAccount">
-    //   <Drawer.Screen name="CreateAccount" component={CreateAccount} options={{ title: 'Home' }} />
-             <Drawer.Navigator initialRouteName="Login">
-      <Drawer.Screen name="Login" component={Login} options={{ title: 'Home' }} />
+    <Drawer.Navigator initialRouteName="TripApp">
+      <Drawer.Screen name="TripApp"  component={TripApp}  initialParams={{ username }} options={{ title: 'Home' }} />
       <Drawer.Screen name="About" component={AboutScreen} />
       <Drawer.Screen name="Contact" component={ContactScreen} />
-      <Drawer.Screen name="Profile" component={ProfileScreen} />
+        <Drawer.Screen name="Start a Trip" component={attractionChoice} />
+      <Drawer.Screen name="Profile" component={ProfileScreen} initialParams={{ username }} />
     </Drawer.Navigator>
   );
 }
 export default function App() {
   return (
     <NavigationContainer>
-      <Stack.Navigator initialRouteName="Drawer">
+      <Stack.Navigator initialRouteName="Login">
         <Stack.Screen
-          name="Drawer"
-          component={MyDrawer}
+          name="Login"
+          component={Login}
           options={{ headerShown: false }}
         />
-          <Stack.Screen name="TripApp" component={TripApp} />
+          <Stack.Screen name = "Drawer" component={MyDrawer} options={{ headerShown: false }} />
+          {/*//<Stack.Screen name="TripApp" component={TripApp} initialParams={ username } />*/}
           <Stack.Screen name="createAccount" component={CreateAccount} options={{ title: 'Create Account' }} />
         <Stack.Screen name="attractionChoice" component={HomeScreen} />
         <Stack.Screen name="profileScreen" component={ProfileScreen} />
-        <Stack.Screen name="Map" component={MapScreen} />
+        <Stack.Screen name="Map" component={MapScreen}  />
       </Stack.Navigator>
     </NavigationContainer>
   );

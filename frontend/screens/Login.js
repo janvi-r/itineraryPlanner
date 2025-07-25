@@ -41,6 +41,10 @@ const Login = ({navigation}) => {
             // Example: data might contain token if using token auth
             Alert.alert("Success", "Logged in successfully!");
             // You can save the token or navigate to another screen here
+            navigation.reset({
+        index: 0,
+        routes: [{ name: 'Drawer', params: { username: username } }],
+    });
             console.log("Token:", data.token);
         } else {
             // Login failed
@@ -69,7 +73,7 @@ const Login = ({navigation}) => {
                     />
                 </View>
                 <View style={styles.buttonContainer}>
-                    <Button title="Login" onPress={() => navigation.navigate('TripApp', {username: username})}/>
+                    <Button title="Login" onPress={() => navigation.navigate('Drawer', {username: username})}/>
                 </View>
                 <View style={styles.buttonContainer}>
                     <Button title="Register" onPress={() => navigation.navigate('createAccount')}/>

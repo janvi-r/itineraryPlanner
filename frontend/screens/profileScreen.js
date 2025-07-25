@@ -1,18 +1,21 @@
 import React from 'react';
 import {View, Text, StyleSheet, TouchableOpacity, SafeAreaView, Button} from 'react-native';
 
+const ProfileScreen = ({navigation, route}) => {
+    const { username } = route.params;
+    // console.log('ProfileScreen username:', username);
 
-const ProfileScreen = () => {
     return (
         <SafeAreaView style={styles.container}>
 
             {/*top welcome box*/}
             <View style={styles.welcomeBox}>
-                <Text style={styles.welcome}>Hello 'Name'</Text>
+                <Text style={styles.welcome}>Hello {username}!</Text>
             </View>
 
             {/*profile picture face box*/}
             <View style={styles.profilePictureCircle}/>
+
 
             {/*chnge pp pic placeholder*/}
             <View style={styles.changeImgBox}>

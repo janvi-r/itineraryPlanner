@@ -22,6 +22,9 @@ const slides = [
 const TripApp = ({navigation, route}) => {
   const [currentIndex, setCurrentIndex] = useState(0);
   const { username } = route.params;
+  //   const username = route?.params?.username;
+  //   console.log('TripApp username:', username);
+
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -78,7 +81,7 @@ const TripApp = ({navigation, route}) => {
                 </TouchableOpacity>
                 <TouchableOpacity
                     style={styles.iconContainer}
-                    onPress={() => navigation.navigate('profileScreen')}>
+                    onPress={() => navigation.navigate('profileScreen', {username})}>
                     <Text style={styles.icon}>👤</Text>
                 </TouchableOpacity>
             </View>

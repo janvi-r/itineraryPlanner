@@ -89,9 +89,6 @@ const { cityName, selectedAttractions } = route?.params || {};
                 {/* Attraction Markers */}
                 {attractions.filter(a => a.lat && a.lon)
                     .map((a, index) => {
-                        // console.log('Image URL:', a.image_urls[0]);
-
-
                         return (
                             <Marker
                                 key={index}
@@ -141,7 +138,6 @@ const styles = StyleSheet.create({
     },
     map: {
         width: SCREEN_WIDTH,
-        //height: '100%',
         flex: 1,
     },
     buttonContainer: {
