@@ -4,9 +4,9 @@ import {View, StyleSheet, Dimensions, Button, Text, Image} from 'react-native';
 
 const SCREEN_WIDTH = Dimensions.get('window').width;
 
-const MapScreen = ({route}) => {
+const MapScreen = ({navigation, route}) => {
     const { username } = route.params;
-const { cityName, selectedAttractions } = route?.params || {};
+    const {cityName, selectedAttractions, days } = route?.params || {};
     const [city, setCity] = useState(null);
     const [attractions, setAttractions] = useState([]);
     const [removedMarkers, setRemovedMarkers] = useState([]); // Track removed marker
@@ -52,21 +52,29 @@ const { cityName, selectedAttractions } = route?.params || {};
             ...prev,
             {day: currentDay, attractions: pressedAttractions}
         ]);
-
-
+        const newAttractionDays = [
+    ...attractionDays,
+            {day: currentDay, attractions: pressedAttractions }
+  ];
         setPressedAttractions([]);
         attractions.filter(a => a.lat && a.lon)
 
-        if (currentDay < 3) {
+        if (currentDay < days) {
             setCurrentDay(prev => prev + 1);
         } else {
-            console.log('Trip complete:', JSON.stringify([...attractionDays, {
-                day: currentDay,
-                attractions: pressedAttractions
-            }], null, 2));
+            // navigation.navigate('Finalitinerary', {day: currentDay,
+            //     attractions: pressedAttractions});
+            // console.log('Trip complete:', JSON.stringify([...attractionDays, {
+            //     day: currentDay,
+            //     attractions: pressedAttractions
+            // }], null, 2));
+            console.log(
+      'Trip complete:',
+      JSON.stringify(newAttractionDays, null, 2)
+    );
+            navigation.navigate('FinalItinerary', { itinerary: newAttractionDays });
         }
     };
-
 
     return (
         <View style={styles.container}>
@@ -117,7 +125,7 @@ const { cityName, selectedAttractions } = route?.params || {};
                     })}
 
             </MapView>
-            <Text>Currently selecting for Day {currentDay} of {3}</Text>
+            <Text>Currently selecting for Day {currentDay} of {days}</Text>
             <View style={styles.buttonsRow}>
 
                 <View style={styles.buttonContainer}>

@@ -9,9 +9,7 @@ from django.contrib.auth.models import User
 from fastapi.concurrency import run_in_threadpool
 from fastapi import FastAPI
 from django.contrib.auth import authenticate
-
 from datetime import date  # ✅ Needed for date parsing
-
 
 app = FastAPI()
 
@@ -23,9 +21,6 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-
-
-
 class UserCreate(BaseModel):
     username: str
     password: str
@@ -33,20 +28,7 @@ class UserCreate(BaseModel):
     first_name: str
     last_name: str
     birthday: date
-import httpx
 
-import httpx
-
-
-
-# app = FastAPI()
-#
-# class UserCreate(BaseModel):
-#     username: str
-#     password: str
-#     email: str
-#     first_name: str
-#     last_name: str
 class LoginData(BaseModel):
     username: str
     password: str
@@ -57,10 +39,14 @@ async def login(data: LoginData):
         user = authenticate(username=data.username, password=data.password)
         if not user:
             raise HTTPException(status_code=401, detail="Invalid username or password")
-        # You can generate a token here or just return success
-        return {"username": user.username}
+        # 🔧 Return token (mocked for now)
+        return {
+            "username": user.username,
+            "token": f"mock-token-for-{user.username}"
+        }
 
     return await run_in_threadpool(auth_user)
+
 
 @app.post("/api/register/")
 async def register_user(user: UserCreate):

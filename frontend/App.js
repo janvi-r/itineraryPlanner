@@ -12,6 +12,8 @@ import CreateAccount from './screens/createAccount';
 import MapScreen from "./screens/MapScreen";
 import Login from './screens/Login';
 import attractionChoice from "./screens/attractionChoice";
+import Logout from './components/logout';
+import FinalItinerary from "./screens/Finalitinerary";
 
 // Drawer navigator with screens inside the drawer
 function MyDrawer({route}) {
@@ -26,6 +28,10 @@ function MyDrawer({route}) {
       <Drawer.Screen name="Contact" component={ContactScreen} />
         <Drawer.Screen name="Start a Trip" component={attractionChoice} />
       <Drawer.Screen name="Profile" component={ProfileScreen} initialParams={{ username }} />
+
+      {/*  Make the button red*/}
+      <Drawer.Screen name="Logout" component={Logout} />
+
     </Drawer.Navigator>
   );
 }
@@ -44,6 +50,8 @@ export default function App() {
         <Stack.Screen name="attractionChoice" component={HomeScreen} />
         <Stack.Screen name="profileScreen" component={ProfileScreen} />
         <Stack.Screen name="Map" component={MapScreen}  />
+          <Stack.Screen name="FinalItinerary" component={FinalItinerary}  />
+
       </Stack.Navigator>
     </NavigationContainer>
   );
