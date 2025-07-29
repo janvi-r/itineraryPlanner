@@ -1,4 +1,4 @@
-from backend.models import City, User, Attraction, PastTrips
+from backend.models import City, User, Attraction, PastTrips, FinalItinerary
 from asgiref.sync import sync_to_async
 
 async def save_trip_logic(username, city_name, attraction_names):
@@ -50,3 +50,25 @@ async def get_saved_trip_data(username, city_name):
     except Exception as e:
         print(f"get_saved_trip_data error: {e}")
         raise Exception(f"get_saved_trip_data error: {e}")
+
+async def save_daywise_trip(username, city_name, itinerary_data):
+    user = await sync_to_async(User.objects.get)(username=username)
+    city = await sync_to_async(City.objects.get)(name__iexact=city_name)
+
+    for day_entry in itinerary_data:
+        day_num = day_entry["day"]
+        trip, _ = await sync_to_async(FinalItinerary.objects.get_or_create)(
+            user=user, city=city, day=day_num
+        )
+        await sync_to_async(trip.attractions.clear)()
+
+        for attr_data in day_entry["attractions"]:
+            name = attr_data["name"]
+            try:
+                attraction = await sync_to_async(Attraction.objects.get)(name=name, city=city)
+                await sync_to_async(trip.attractions.add)(attraction)
+            except Attraction.DoesNotExist:
+                continue
+
+        await sync_to_async(trip.save)()
+

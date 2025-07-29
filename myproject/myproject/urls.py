@@ -5,6 +5,9 @@ from django.urls import path
 from backend import createattractionMap2
 from backend.views import save_past_trip
 #from backend.api import saved_trip_attractions
+from backend.utils import save_daywise_trip
+from backend.views import get_past_trips
+
 
 from django.urls import path
 # from backend.views import LoginView
@@ -23,5 +26,7 @@ urlpatterns = [
     path('api/register/', register_user),
     path('api/login/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
     path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
+# path('api/past_trips/<str:username>/', save_daywise_trip, name='get_past_trips'),
+    path('api/past_trips/<str:username>/', get_past_trips, name='get_past_trips'),
 
 ]

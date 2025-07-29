@@ -477,7 +477,6 @@ const HomeScreen = ({route}) => {
                     </TouchableOpacity>
                 </View>
             )}
-
         </View>
     );
 };

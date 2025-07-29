@@ -10,6 +10,7 @@ from fastapi.concurrency import run_in_threadpool
 from fastapi import FastAPI
 from django.contrib.auth import authenticate
 from datetime import date  # ✅ Needed for date parsing
+from backend.utils import save_daywise_trip
 
 app = FastAPI()
 
@@ -138,4 +139,43 @@ async def saved_trip_attractions(city_name: str, username: str):
     except Exception as e:
         print(f"Error in saved_trip_attractions: {e}")
         raise HTTPException(status_code=404, detail=str(e))
+
+
+@app.post("/api/save_daywise_trip/")
+async def save_daywise_trip_endpoint(request: Request):
+    data = await request.json()
+    username = data["username"]
+    city = data["city"]
+    itinerary = data["itinerary"]
+
+    await save_daywise_trip(username, city, itinerary)
+    return {"status": "success"}
+
+
+from fastapi import HTTPException
+
+@app.get("/api/user_trips/{username}")
+async def get_user_trips(username: str):
+    from backend.models import PastTrips, User
+    from asgiref.sync import sync_to_async
+
+    try:
+        user = await sync_to_async(User.objects.get)(username=username)
+        trips = await sync_to_async(list)(PastTrips.objects.filter(user=user))
+
+        results = []
+        for trip in trips:
+            results.append({
+                "id": trip.id,
+                "city": trip.city.name,
+                "itinerary": trip.itinerary,  # assuming JSONField storing the itinerary
+            })
+        return results
+
+    except User.DoesNotExist:
+        raise HTTPException(status_code=404, detail="User not found")
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
 

@@ -53,26 +53,47 @@ const MapScreen = ({navigation, route}) => {
             {day: currentDay, attractions: pressedAttractions}
         ]);
         const newAttractionDays = [
-    ...attractionDays,
-            {day: currentDay, attractions: pressedAttractions }
-  ];
+            ...attractionDays,
+                    {day: currentDay, attractions: pressedAttractions }
+          ];
         setPressedAttractions([]);
         attractions.filter(a => a.lat && a.lon)
 
         if (currentDay < days) {
             setCurrentDay(prev => prev + 1);
         } else {
-            // navigation.navigate('Finalitinerary', {day: currentDay,
-            //     attractions: pressedAttractions});
-            // console.log('Trip complete:', JSON.stringify([...attractionDays, {
-            //     day: currentDay,
-            //     attractions: pressedAttractions
-            // }], null, 2));
             console.log(
       'Trip complete:',
       JSON.stringify(newAttractionDays, null, 2)
     );
-            navigation.navigate('FinalItinerary', { itinerary: newAttractionDays });
+            // navigation.navigate('FinalItinerary', { itinerary: newAttractionDays });
+            const finalItinerary = [...attractionDays, { day: currentDay, attractions: pressedAttractions }];
+
+fetch('http://192.168.1.205:8000/api/save_daywise_trip/', {
+  method: 'POST',
+  headers: {
+    'Content-Type': 'application/json',
+  },
+  body: JSON.stringify({
+    username: username,
+    city: cityName,
+    itinerary: finalItinerary
+  }),
+})
+  .then(res => {
+    if (!res.ok) throw new Error("Failed to save itinerary");
+    return res.json();
+  })
+  .then(data => {
+    console.log('Successfully saved day-wise trip:', data);
+    navigation.navigate('FinalItinerary', { itinerary: finalItinerary });
+  })
+  .catch(err => {
+    console.error('Error saving trip:', err);
+    // Still navigate to itinerary screen, optionally show error to user
+    navigation.navigate('FinalItinerary', { itinerary: finalItinerary });
+  });
+
         }
     };
 

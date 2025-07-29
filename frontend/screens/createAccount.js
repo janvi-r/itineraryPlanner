@@ -12,7 +12,7 @@ import {
 } from "react-native";
 import React, {useState} from "react";
 
-const CreateAccount = () => {
+const CreateAccount = ({navigation}) => {
     const [firstName, setFirstName] = useState("");
     const [lastName, setLastName] = useState("");
     const [email, setEmail] = useState("");
@@ -96,6 +96,11 @@ const CreateAccount = () => {
 
             if (response.ok) {
                 Alert.alert("Success", "Account created successfully!");
+                // navigation.reset({
+                //     index: 0,
+                //     routes: [{ name: 'Drawer', params: { username: username } }],
+                //   });\
+                navigation.navigate("Drawer", {username: username});
                 // Clear form if needed
             } else {
                 const error = await response.json();

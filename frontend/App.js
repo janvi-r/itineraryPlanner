@@ -14,8 +14,8 @@ import Login from './screens/Login';
 import attractionChoice from "./screens/attractionChoice";
 import Logout from './components/logout';
 import FinalItinerary from "./screens/Finalitinerary";
+import PastTrips from "./screens/PastTrips";
 
-// Drawer navigator with screens inside the drawer
 function MyDrawer({route}) {
       // const { username } = route.params;
       const username = route?.params?.username;
@@ -28,6 +28,7 @@ function MyDrawer({route}) {
       <Drawer.Screen name="Contact" component={ContactScreen} />
         <Drawer.Screen name="Start a Trip" component={attractionChoice} />
       <Drawer.Screen name="Profile" component={ProfileScreen} initialParams={{ username }} />
+        <Drawer.Screen name="PastTrips" component={PastTrips} initialParams={{ username }} />
 
       {/*  Make the button red*/}
       <Drawer.Screen name="Logout" component={Logout} />

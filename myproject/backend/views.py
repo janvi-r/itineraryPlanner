@@ -1,15 +1,4 @@
-from rest_framework.decorators import api_view
 from backend.utils import save_trip_logic
-from backend.serializer import UserCreateSerializer
-
-# test
-from django.contrib.auth import authenticate
-from rest_framework.views import APIView
-from rest_framework.response import Response
-from rest_framework import status
-
-
-
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework import status
@@ -29,25 +18,6 @@ def register_user(request):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-# sign in attempt
-
-
-# class LoginView(APIView):
-#     def post(self, request):
-#         username = request.data.get("username")
-#         password = request.data.get("password")
-#
-#         if not username or not password:
-#             return Response({"error": "Username and password are required."}, status=status.HTTP_400_BAD_REQUEST)
-#
-#         user = authenticate(username=username, password=password)
-#
-#         if user is not None:
-#             return Response({"message": "Login successful", "username": user.username}, status=status.HTTP_200_OK)
-#         else:
-#             return Response({"error": "Invalid credentials"}, status=status.HTTP_401_UNAUTHORIZED)
-
-
 @api_view(['POST'])
 def save_past_trip(request):
     try:
@@ -60,6 +30,41 @@ def save_past_trip(request):
 
     except Exception as e:
         return Response({'status': 'error', 'detail': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
+from django.http import JsonResponse
+from django.contrib.auth.models import User
+from backend.models import FinalItinerary
+
+def get_past_trips(request, username):
+    try:
+        user = User.objects.get(username=username)
+    except User.DoesNotExist:
+        return JsonResponse({"detail": "User not found"}, status=404)
+
+    trips = FinalItinerary.objects.filter(user=user)
+    if not trips.exists():
+        return JsonResponse({"detail": "No trips found"}, status=404)
+
+    trips_data = []
+    for trip in trips:
+        attractions = trip.attractions.all()
+        trips_data.append({
+            "id": trip.id,
+            "city": trip.city.name,
+            "day": trip.day,
+            "attractions": [
+                {"name": attr.name, "lat": attr.lat, "lon": attr.lon} for attr in attractions
+            ],
+        })
+
+    return JsonResponse({"trips": trips_data})
+
+
+
+
+
+
+
 
 
 

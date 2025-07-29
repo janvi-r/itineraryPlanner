@@ -35,15 +35,17 @@ class PastTrips(models.Model):  #aka Saved Trips
     city = models.ForeignKey(City, on_delete=models.CASCADE, related_name='saved_trips')
     attractions = models.ManyToManyField(Attraction, blank=True, related_name='saved_in_trips')
 
+class FinalItinerary(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='day_wise_trips')
+    city = models.ForeignKey(City, on_delete=models.CASCADE, related_name='day_wise_trips')
+    day = models.IntegerField()
+    attractions = models.ManyToManyField(Attraction, blank=True, related_name='in_daywise_trips')
+
+    class Meta:
+        app_label = 'backend'
+        unique_together = ('user', 'city', 'day')  # so you don’t duplicate a day
 
 
-# class User(models.Model):
-#     firstName = models.CharField(max_length=100)
-#     lastName = models.CharField(max_length=100)
-#     email = models.EmailField()
-#     username = models.CharField(max_length=100)
-#     password = models.CharField(max_length=100)
-#     birthday = models.DateField()
-#     avatar = models.ImageField(default='default.jpg', upload_to='profile_images')
-#
+
+
 
