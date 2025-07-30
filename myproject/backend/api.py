@@ -1,8 +1,10 @@
 from fastapi.middleware.cors import CORSMiddleware
+from flask import jsonify
+
 from scrape import get_attractions  # Django-dependent function
 from cityVerifier import find_closest_city
 from typing import List
-from backend.models import UserProfile  # or wherever your UserProfile is
+from backend.models import UserProfile, FinalItinerary  # or wherever your UserProfile is
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 from django.contrib.auth.models import User
@@ -10,6 +12,24 @@ from fastapi.concurrency import run_in_threadpool
 from fastapi import FastAPI
 from django.contrib.auth import authenticate
 from datetime import date  # ✅ Needed for date parsing
+# from backend.utils import save_daywise_trip
+from fastapi import APIRouter, Request
+from backend.utils import save_trip_logic
+from backend.utils import get_saved_trip_data
+from fastapi import HTTPException
+from fastapi import HTTPException
+from backend.models import PastTrips, User
+from fastapi.concurrency import run_in_threadpool
+from fastapi import APIRouter, HTTPException
+from asgiref.sync import sync_to_async
+from starlette.concurrency import run_in_threadpool
+from django.contrib.auth.models import User
+from backend.models import FinalItinerary
+from forgotPassword import send_otp
+from pydantic import BaseModel
+from fastapi import HTTPException
+from django.contrib.auth.models import User
+from fastapi.concurrency import run_in_threadpool
 from backend.utils import save_daywise_trip
 
 app = FastAPI()
@@ -118,8 +138,7 @@ class TripSubmission(BaseModel):
     city: str
     attractions: List[str]  # List of attraction names
 
-from fastapi import APIRouter, Request
-from backend.utils import save_trip_logic
+
 
 @app.post("/api/save_trip/")
 async def save_trip(request: Request):
@@ -128,7 +147,7 @@ async def save_trip(request: Request):
     return {"status": "success", "trip_id": trip.id}
 
 
-from backend.utils import get_saved_trip_data
+
 @app.get("/api/saved_trip_attractions/{city_name}/{username}/")
 async def saved_trip_attractions(city_name: str, username: str):
     print(f"Received request for city: {city_name}, user: {username}")
@@ -152,30 +171,60 @@ async def save_daywise_trip_endpoint(request: Request):
     return {"status": "success"}
 
 
-from fastapi import HTTPException
+
 
 @app.get("/api/user_trips/{username}")
 async def get_user_trips(username: str):
-    from backend.models import PastTrips, User
-    from asgiref.sync import sync_to_async
-
     try:
-        user = await sync_to_async(User.objects.get)(username=username)
-        trips = await sync_to_async(list)(PastTrips.objects.filter(user=user))
+        def fetch_final_itinerary():
+            user = User.objects.get(username=username)
+            itineraries = FinalItinerary.objects.filter(user=user).order_by("city__name", "day")
 
-        results = []
-        for trip in trips:
-            results.append({
-                "id": trip.id,
-                "city": trip.city.name,
-                "itinerary": trip.itinerary,  # assuming JSONField storing the itinerary
-            })
-        return results
+            results = []
+            for item in itineraries:
+                attraction_names = [a.name for a in item.attractions.all()]
+                results.append({
+                    "city": item.city.name,
+                    "day": item.day,
+                    "attractions": attraction_names
+                })
+            return results
+
+        return await run_in_threadpool(fetch_final_itinerary)
 
     except User.DoesNotExist:
         raise HTTPException(status_code=404, detail="User not found")
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
+
+class OTPRequest(BaseModel):
+    username: str
+
+@app.post("/api/send_otp/")
+async def send_otp_endpoint(data: OTPRequest):
+    async def logic():
+        try:
+            user = User.objects.get(username=data.username)
+            otp = send_otp(user.email)
+            print(f"OTP sent to {user.email}: {otp}")  # ⚠️ For debugging only
+            return {"message": f"OTP sent to {user.email}", "otp": otp}  # ❗ Remove OTP from response in production
+        except User.DoesNotExist:
+            raise HTTPException(status_code=404, detail="User not found")
+        except Exception as e:
+            raise HTTPException(status_code=500, detail=str(e))
+
+    return await run_in_threadpool(logic)
+
+from flask import Flask, request, jsonify
+from email.message import EmailMessage
+import random, smtplib
+
+@app.route('/send-otp', methods=['POST'])
+def send_otp_route():
+            data = request.get_json()
+            email = data.get('email')
+            otp = send_otp(email)
+            return jsonify({'otp': otp})
 
 

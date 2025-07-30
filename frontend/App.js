@@ -15,22 +15,19 @@ import attractionChoice from "./screens/attractionChoice";
 import Logout from './components/logout';
 import FinalItinerary from "./screens/Finalitinerary";
 import PastTrips from "./screens/PastTrips";
+import SentOTP from "./screens/changePassword/SentOTP";
+import otpVerifier from "./screens/changePassword/otpVerifier";
 
 function MyDrawer({route}) {
-      // const { username } = route.params;
       const username = route?.params?.username;
-
 
   return (
     <Drawer.Navigator initialRouteName="TripApp">
       <Drawer.Screen name="TripApp"  component={TripApp}  initialParams={{ username }} options={{ title: 'Home' }} />
-      <Drawer.Screen name="About" component={AboutScreen} />
-      <Drawer.Screen name="Contact" component={ContactScreen} />
-        <Drawer.Screen name="Start a Trip" component={attractionChoice} />
+      {/*<Drawer.Screen name="About" component={AboutScreen} />*/}
+      {/*<Drawer.Screen name="Contact" component={ContactScreen} />*/}
       <Drawer.Screen name="Profile" component={ProfileScreen} initialParams={{ username }} />
-        <Drawer.Screen name="PastTrips" component={PastTrips} initialParams={{ username }} />
-
-      {/*  Make the button red*/}
+        <Drawer.Screen name="Past Trips" component={PastTrips} initialParams={{ username }} />
       <Drawer.Screen name="Logout" component={Logout} />
 
     </Drawer.Navigator>
@@ -46,12 +43,13 @@ export default function App() {
           options={{ headerShown: false }}
         />
           <Stack.Screen name = "Drawer" component={MyDrawer} options={{ headerShown: false }} />
-          {/*//<Stack.Screen name="TripApp" component={TripApp} initialParams={ username } />*/}
           <Stack.Screen name="createAccount" component={CreateAccount} options={{ title: 'Create Account' }} />
         <Stack.Screen name="attractionChoice" component={HomeScreen} />
         <Stack.Screen name="profileScreen" component={ProfileScreen} />
         <Stack.Screen name="Map" component={MapScreen}  />
           <Stack.Screen name="FinalItinerary" component={FinalItinerary}  />
+          <Stack.Screen name="Send OTP" component={SentOTP}/>
+          <Stack.Screen name="OTP Verifier" component={otpVerifier}/>
 
       </Stack.Navigator>
     </NavigationContainer>
