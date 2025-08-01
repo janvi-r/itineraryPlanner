@@ -34,30 +34,30 @@ def save_past_trip(request):
 from django.http import JsonResponse
 from django.contrib.auth.models import User
 from backend.models import FinalItinerary
-#
-# def get_past_trips(request, username):
-#     try:
-#         user = User.objects.get(username=username)
-#     except User.DoesNotExist:
-#         return JsonResponse({"detail": "User not found"}, status=404)
-#
-#     trips = FinalItinerary.objects.filter(user=user)
-#     if not trips.exists():
-#         return JsonResponse({"detail": "No trips found"}, status=404)
-#
-#     trips_data = []
-#     for trip in trips:
-#         attractions = trip.attractions.all()
-#         trips_data.append({
-#             "id": trip.id,
-#             "city": trip.city.name,
-#             "day": trip.day,
-#             "attractions": [
-#                 {"name": attr.name, "lat": attr.lat, "lon": attr.lon} for attr in attractions
-#             ],
-#         })
-#
-#     return JsonResponse({"trips": trips_data})
+
+def get_past_trips(request, username):
+    try:
+        user = User.objects.get(username=username)
+    except User.DoesNotExist:
+        return JsonResponse({"detail": "User not found"}, status=404)
+
+    trips = FinalItinerary.objects.filter(user=user)
+    if not trips.exists():
+        return JsonResponse({"detail": "No trips found"}, status=404)
+
+    trips_data = []
+    for trip in trips:
+        attractions = trip.attractions.all()
+        trips_data.append({
+            "id": trip.id,
+            "city": trip.city.name,
+            "day": trip.day,
+            "attractions": [
+                {"name": attr.name, "lat": attr.lat, "lon": attr.lon} for attr in attractions
+            ],
+        })
+
+    return JsonResponse({"trips": trips_data})
 #
 # from collections import defaultdict
 # from django.http import JsonResponse

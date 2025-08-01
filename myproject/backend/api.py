@@ -25,7 +25,7 @@ from asgiref.sync import sync_to_async
 from starlette.concurrency import run_in_threadpool
 from django.contrib.auth.models import User
 from backend.models import FinalItinerary
-from forgotPassword import send_otp
+from sendOTP import send_otp
 from pydantic import BaseModel
 from fastapi import HTTPException
 from django.contrib.auth.models import User
@@ -200,15 +200,30 @@ async def get_user_trips(username: str):
 
 class OTPRequest(BaseModel):
     username: str
+#
+# @app.post("/api/send_otp/")
+# async def send_otp_endpoint(data: OTPRequest):
+#     async def logic():
+#         try:
+#             user = User.objects.get(username=data.username)
+#             otp = send_otp(user.email)
+#             print(f"OTP sent to {user.email}: {otp}")  # ⚠️ For debugging only
+#             return {"message": f"OTP sent to {user.email}", "otp": otp}  # ❗ Remove OTP from response in production
+#         except User.DoesNotExist:
+#             raise HTTPException(status_code=404, detail="User not found")
+#         except Exception as e:
+#             raise HTTPException(status_code=500, detail=str(e))
+#
+#     return await run_in_threadpool(logic)
 
 @app.post("/api/send_otp/")
 async def send_otp_endpoint(data: OTPRequest):
-    async def logic():
+    def logic():
         try:
             user = User.objects.get(username=data.username)
             otp = send_otp(user.email)
-            print(f"OTP sent to {user.email}: {otp}")  # ⚠️ For debugging only
-            return {"message": f"OTP sent to {user.email}", "otp": otp}  # ❗ Remove OTP from response in production
+            print(f"OTP sent to {user.email}: {otp}")
+            return {"message": f"OTP sent to {user.email}", "otp": otp}
         except User.DoesNotExist:
             raise HTTPException(status_code=404, detail="User not found")
         except Exception as e:
@@ -228,3 +243,22 @@ def send_otp_route():
             return jsonify({'otp': otp})
 
 
+
+class PasswordChangeRequest(BaseModel):
+    username: str
+    new_password: str
+
+@app.post("/api/change_password/")
+async def change_password(data: PasswordChangeRequest):
+    def logic():
+        try:
+            user = User.objects.get(username=data.username)
+            user.set_password(data.new_password)
+            user.save()
+            return {"message": "Password changed successfully"}
+        except User.DoesNotExist:
+            raise HTTPException(status_code=404, detail="User not found")
+        except Exception as e:
+            raise HTTPException(status_code=500, detail=str(e))
+
+    return await run_in_threadpool(logic)

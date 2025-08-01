@@ -17,6 +17,8 @@ import FinalItinerary from "./screens/Finalitinerary";
 import PastTrips from "./screens/PastTrips";
 import SentOTP from "./screens/changePassword/SentOTP";
 import otpVerifier from "./screens/changePassword/otpVerifier";
+import Change_Password from "./screens/changePassword/ChangePassword";
+// import ChangePassword from "./screens/changePassword/ChangePassword";
 
 function MyDrawer({route}) {
       const username = route?.params?.username;
@@ -50,6 +52,7 @@ export default function App() {
           <Stack.Screen name="FinalItinerary" component={FinalItinerary}  />
           <Stack.Screen name="Send OTP" component={SentOTP}/>
           <Stack.Screen name="OTP Verifier" component={otpVerifier}/>
+          <Stack.Screen name="change_Password" component={Change_Password}/>
 
       </Stack.Navigator>
     </NavigationContainer>

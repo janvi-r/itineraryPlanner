@@ -11,43 +11,48 @@ import {
 } from 'react-native';
 
 const OTP_Check = ({ route, navigation }) => {
-    const [otp, setOtp] = useState('');
+    const otp = route?.params?.otp;
+    const username = route?.params?.username;
+    // const [otp, setOtp] = useState('');
     const [userOTP, setUserOTP] = useState('');
     const [email, setEmail] = useState(route.params?.email || ''); // assuming you pass email from the previous screen
 
     const verifyOtp = async () => {
-        try {
-            const response = await fetch("http://192.168.1.205:5000/api/verify-otp", {
+        // try {
+        //     const response = await fetch("http://192.168.1.205:5000/api/verify-otp", {
+        //
+        //         method: "POST",
+        //         headers: {
+        //             "Content-Type": "application/json",
+        //         },
+        //         body: JSON.stringify({
+        //             email: email,
+        //             otp: otp,
+        //         }),
+        //     });
+        //
+        //     const data = await response.json();
 
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify({
-                    email: email,
-                    otp: otp,
-                }),
-            });
-
-            const data = await response.json();
-
-            if (data.verified) {
+            // if (data.verified) {
                 // Alert.alert("Success", "OTP Verified!");
                 if (userOTP === otp){
-                    navigation.navigate("SentOTP");
+                    console.log("correct OTP")
+                    navigation.navigate("change_Password",{username: username} );
                 } else {
+                    console.log(userOTP)
+                    console.log(otp)
                     Alert.alert("Error", "Invalid OTP.");
                 }
 
-            } else {
-                Alert.alert("Error", "Failed to Send OTP. Please Try Again");
-                navigation.navigate("Login");
-
-            }
-        } catch (error) {
-            console.error("OTP verification failed:", error);
-            Alert.alert("Error", "Something went wrong. Try again.");
-        }
+            //  else {
+            //     Alert.alert("Error", "Failed to Send OTP. Please Try Again");
+            //     navigation.navigate("Login");
+            //
+            // }
+        // } catch (error) {
+        //     console.error("OTP verification failed:", error);
+        //     Alert.alert("Error", "Something went wrong. Try again.");
+        // }
     };
 
     return (
@@ -66,17 +71,17 @@ const OTP_Check = ({ route, navigation }) => {
                 />
             </View>
 
-            <View style={{ paddingHorizontal: 20, marginBottom: 20 }}>
+            <View style={{ paddingHorizontal: 20, marginBottom: 280 }}>
                 <Button title="Check" onPress={verifyOtp} />
             </View>
 
-            {email && (
-                <View style={{ paddingHorizontal: 20 }}>
-                    <Text style={{ fontSize: 16, color: 'black' }}>
-                        Email: {email}
-                    </Text>
-                </View>
-            )}
+            {/*{email && (*/}
+            {/*    <View style={{ paddingHorizontal: 20 }}>*/}
+            {/*        <Text style={{ fontSize: 16, color: 'black' }}>*/}
+            {/*            Email: {email}*/}
+            {/*        </Text>*/}
+            {/*    </View>*/}
+            {/*)}*/}
         </SafeAreaView>
     );
 };
@@ -113,7 +118,7 @@ const styles = StyleSheet.create({
         width: "95%",
         height: "5%",
         marginBottom: 10,
-        marginTop: 500,
+        marginTop: 300,
     },
 });
 

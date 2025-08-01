@@ -10,27 +10,28 @@ import {
     Alert,
 } from 'react-native';
 
-const SentOTP = (navigation) => {
+const SentOTP = ({navigation}) => {
     const [username, setUsername] = useState('');
-    // const [email, setEmail] = useState(null);
 
-    // const getEmailByUsername = async (username) => {
-    //     try {
-    //         const response = await fetch(`http://192.168.68.79:8000/api/get-email/?username=${username}`);
-    //         const data = await response.json();
-    //
-    //         if (response.ok) {
-    //             console.log("User email:", data.email);
-    //             setEmail(data.email);
-    //         } else {
-    //             Alert.alert("Error", data.error || "Something went wrong");
-    //             setEmail(null);
-    //         }
-    //     } catch (error) {
-    //         Alert.alert("Network Error", error.message);
-    //         setEmail(null);
-    //     }
-    // };
+    const [email, setEmail] = useState(null);
+
+    const getEmailByUsername = async (username) => {
+        try {
+            const response = await fetch(`http://192.168.68.79:8000/api/get-email/?username=${username}`);
+            const data = await response.json();
+
+            if (response.ok) {
+                console.log("User email:", data.email);
+                setEmail(data.email);
+            } else {
+                Alert.alert("Error", data.error || "Something went wrong");
+                setEmail(null);
+            }
+        } catch (error) {
+            Alert.alert("Network Error", error.message);
+            setEmail(null);
+        }
+    };
 
     const sendOTP = async (username) => {
         try {
@@ -48,7 +49,7 @@ const SentOTP = (navigation) => {
                 Alert.alert("OTP Sent", "Check your email for the OTP.");
                 // remove agtetr
                 console.log("OTP (testing only):", data.otp);  // ✅ Only for dev
-                navigation.navigate("otpVerifier"); // your next screen
+                navigation.navigate("OTP Verifier", {otp: data.otp, username}); // your next screen
 
             } else {
                 Alert.alert("Error", data.detail || "OTP send failed.");
@@ -100,7 +101,7 @@ const styles = StyleSheet.create({
         position: 'absolute',
         justifyContent: 'center',
         alignSelf: 'center',
-        marginTop: "15%",
+        marginTop: "30%",
     },
     OTP_Title: {
         fontSize: 30,
@@ -121,8 +122,8 @@ const styles = StyleSheet.create({
         paddingHorizontal: 20,
         width: "95%",
         height: "5%",
-        marginBottom: 10,
-        marginTop: 500,
+        marginBottom: 40,
+        marginTop: 300,
     },
 });
 

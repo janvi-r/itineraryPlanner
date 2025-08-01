@@ -93,7 +93,9 @@ const Login = ({navigation}) => {
                     </View>
 
                     <TouchableOpacity onPress={() => navigation.navigate('placeholder')}>
-                        <Text style={styles.forgotPasswordText}>Forgot Password?</Text>
+                        {/*<Text style={styles.forgotPasswordText}>Forgot Password?</Text>*/}
+                        <Button title="Forgot Password?" onPress={() => navigation.navigate('Send OTP')}/>
+
                     </TouchableOpacity>
 
                 </View>
