@@ -83,6 +83,7 @@ const TripApp = ({ navigation, route }) => {
         imageStyle={{ borderRadius: 8 }}
       >
         <Text style={styles.message}>Your Trip Awaits You!</Text>
+        <TouchableOpacity onPress={() => navigation.navigate('attractionChoice')}></TouchableOpacity>
       </ImageBackground>
 
       <View style={styles.bottomNav}>
