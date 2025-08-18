@@ -1,17 +1,23 @@
 import React from 'react';
-import { View, Text, ScrollView, StyleSheet, Dimensions } from 'react-native';
+import { View, Text, ScrollView, StyleSheet, Dimensions, TouchableOpacity } from 'react-native';
 import MapView, { Marker, Polyline } from 'react-native-maps';
 
 const SCREEN_WIDTH = Dimensions.get('window').width;
 
-const FinalItinerary = ({ route }) => {
+const FinalItinerary = ({ route, navigation }) => {
   const { itinerary } = route.params;
+  const { username } = route.params;
+
+
 
   return (
     <ScrollView style={styles.container}>
       <Text style={styles.title}>Final Itinerary</Text>
+
+      {/* Home button */}
+
+
       {itinerary.map(({ day, attractions }) => {
-        // filter valid lat/lon
         const coordinates = attractions
           .filter(a => a.lat && a.lon)
           .map(a => ({
@@ -23,7 +29,6 @@ const FinalItinerary = ({ route }) => {
           <View key={day} style={styles.daySection}>
             <Text style={styles.dayTitle}>Day {day}</Text>
 
-            {/* Small map for each day */}
             {coordinates.length > 0 && (
               <MapView
                 style={styles.map}
@@ -34,7 +39,6 @@ const FinalItinerary = ({ route }) => {
                   longitudeDelta: 0.05,
                 }}
               >
-                {/* Markers */}
                 {coordinates.map((coord, index) => (
                   <Marker
                     key={index}
@@ -43,7 +47,6 @@ const FinalItinerary = ({ route }) => {
                   />
                 ))}
 
-                {/* Draw line between attractions */}
                 <Polyline
                   coordinates={coordinates}
                   strokeColor="#007BFF"
@@ -52,7 +55,6 @@ const FinalItinerary = ({ route }) => {
               </MapView>
             )}
 
-            {/* Attraction list */}
             {attractions.length > 0 ? (
               attractions.map((attr, index) => (
                 <Text key={index} style={styles.attraction}>
@@ -67,6 +69,17 @@ const FinalItinerary = ({ route }) => {
           </View>
         );
       })}
+      <TouchableOpacity
+        style={styles.homeButton}
+        onPress={() => navigation.navigate('Drawer', {
+    screen: 'TripApp',
+    params: { username: username }
+  })
+}
+
+      >
+        <Text style={styles.homeButtonText}>Go Back Home</Text>
+      </TouchableOpacity>
     </ScrollView>
   );
 };
@@ -84,6 +97,19 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     fontFamily: 'AvenirNext-Regular',
   },
+  homeButton: {
+    backgroundColor: '#007BFF',
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    borderRadius: 8,
+    alignSelf: 'center',
+    marginBottom: 20,
+  },
+  homeButtonText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: '600',
+  },
   daySection: {
     marginBottom: 30,
   },
@@ -94,7 +120,7 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   map: {
-    width: SCREEN_WIDTH - 40, // fit nicely in padding
+    width: SCREEN_WIDTH - 40,
     height: 200,
     borderRadius: 10,
     marginBottom: 10,
@@ -112,4 +138,3 @@ const styles = StyleSheet.create({
 });
 
 export default FinalItinerary;
-

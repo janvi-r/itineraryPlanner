@@ -86,12 +86,12 @@ fetch('http://192.168.1.205:8000/api/save_daywise_trip/', {
   })
   .then(data => {
     console.log('Successfully saved day-wise trip:', data);
-    navigation.navigate('FinalItinerary', { itinerary: finalItinerary });
+    navigation.navigate('FinalItinerary', { itinerary: finalItinerary, username: username  });
   })
   .catch(err => {
     console.error('Error saving trip:', err);
     // Still navigate to itinerary screen, optionally show error to user
-    navigation.navigate('FinalItinerary', { itinerary: finalItinerary });
+    navigation.navigate('FinalItinerary', { itinerary: finalItinerary, username: username  });
   });
 
         }

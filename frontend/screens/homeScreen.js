@@ -87,12 +87,7 @@ const TripApp = ({ navigation, route }) => {
       </ImageBackground>
 
       <View style={styles.bottomNav}>
-        <TouchableOpacity
-          style={styles.iconContainer}
-          onPress={() => navigation.navigate('SidebarNavigator')}
-        >
-          {/*<Text style={styles.icon}>🏠</Text>*/}
-        </TouchableOpacity>
+
         <TouchableOpacity
           style={styles.iconContainer}
           onPress={() => navigation.navigate('attractionChoice', { username })}

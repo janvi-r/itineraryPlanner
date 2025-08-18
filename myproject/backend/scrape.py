@@ -1,13 +1,13 @@
-import requests
 from bs4 import BeautifulSoup
 from PIL import Image
 from io import BytesIO
 import os
 import django
 import sys
-import re
 from sentence_transformers import SentenceTransformer, util
 import torch
+import requests
+import re
 
 BASE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
 if BASE_DIR not in sys.path:
@@ -19,6 +19,7 @@ from backend.models import City, Attraction
 from django.db import transaction
 
 model = SentenceTransformer('all-MiniLM-L6-v2')
+
 
 irrelevant_keywords = [
     # Historical / political topics
@@ -157,6 +158,34 @@ relevant_examples = [
 irrelevant_embeds = model.encode(irrelevant_examples, convert_to_tensor=True)
 relevant_embeds = model.encode(relevant_examples, convert_to_tensor=True)
 
+
+
+# --- DuckDuckGo image search ---
+def get_images_duckduckgo(query, num_images=3):
+    url = "https://duckduckgo.com/"
+    params = {"q": query}
+    headers = {"User-Agent": "Mozilla/5.0"}
+
+    try:
+        # Step 1: Get token ("vqd")
+        res = requests.get(url, params=params, headers=headers)
+        res.raise_for_status()
+        token = re.search(r'vqd=([\'"]?)([0-9-]+)\1', res.text).group(2)
+
+        # Step 2: Get image search results
+        api_url = "https://duckduckgo.com/i.js"
+        params = {"q": query, "vqd": token, "o": "json"}
+        res = requests.get(api_url, params=params, headers=headers)
+        res.raise_for_status()
+
+        data = res.json()
+        return [item["image"] for item in data.get("results", [])[:num_images]]
+
+    except Exception as e:
+        print(f"⚠️ DuckDuckGo failed for '{query}': {e}")
+        return []
+
+
 def dms_to_dd(dms_str):
     if not dms_str:
         return None
@@ -203,24 +232,59 @@ def getAttractionImages(sub_soup, infobox_src, map_url, dot_url):
         for img in image_tags:
             img_url = img.get('src')
             if img_url:
+                # Convert to full-res
                 if img_url.startswith('//'):
                     img_url = 'https:' + img_url
-                if img_url != map_url and img_url != dot_url:
+                if '/thumb/' in img_url:
+                    # Remove /thumb/ and last /<size>-filename.jpg
+                    img_url = re.sub(r'/thumb(/.+)/[^/]+$', r'\1', img_url)
+                if img_url != map_url and img_url != dot_url and is_not_white_image(img_url):
                     img_urls.append(img_url)
     return img_urls
 
-def is_relevant(title, semantic_threshold=0.05):
-    title_lower = title.lower()
-    if any(k in title_lower for k in irrelevant_keywords):
-        return False
-    title_embed = model.encode(title, convert_to_tensor=True)
-    max_irrel = util.cos_sim(title_embed, irrelevant_embeds).max().item()
-    max_relev = util.cos_sim(title_embed, relevant_embeds).max().item()
-    if (max_relev - max_irrel) > semantic_threshold:
+from PIL import Image
+import requests
+from io import BytesIO
+
+def is_not_white_image(url, threshold=245):
+    """
+    Returns True if the image is not mostly white.
+    threshold: max average RGB value to consider it non-white
+    """
+    try:
+        response = requests.get(url, timeout=5)
+        img = Image.open(BytesIO(response.content)).convert("RGB")
+        # Average brightness
+        avg_brightness = sum(img.resize((10,10)).getdata()[i][0] for i in range(100)) / 100
+        if avg_brightness > threshold:
+            return False
         return True
-    else:
-        print(f"🧠 Filtered semantically: {title} (relev={{max_relev:.2f}}, irrel={{max_irrel:.2f}})")
-        return False
+    except:
+        return True  # If we fail to load, keep it just in case
+
+
+#
+# def is_relevant(title, semantic_threshold=0.05):
+#     title_lower = title.lower()
+#     if any(k in title_lower for k in irrelevant_keywords):
+#         return False
+#     title_embed = model.encode(title, convert_to_tensor=True)
+#     max_irrel = util.cos_sim(title_embed, irrelevant_embeds).max().item()
+#     max_relev = util.cos_sim(title_embed, relevant_embeds).max().item()
+#     if (max_relev - max_irrel) > semantic_threshold:
+#         return True
+#     else:
+#         print(f"🧠 Filtered semantically: {title} (relev={{max_relev:.2f}}, irrel={{max_irrel:.2f}})")
+#         return False
+
+def is_relevant(title: str) -> bool:
+    # Only filter obvious non-attraction pages
+    bad_prefixes = [
+        "Category:", "Template:", "Commons:",
+        "Wikipedia:", "Help:", "Portal:"
+    ]
+    return not any(title.startswith(bad) for bad in bad_prefixes)
+
 
 def is_content_relevant(soup):
     try:
@@ -296,6 +360,29 @@ def get_links_from_list_page(city_formatted):
         return []
 
 
+# Instead of dropping everything below a threshold
+# keep at least the top N attractions
+def filter_attractions(raw_links, city, model, min_results=10, top_n=20):
+    # Embed city + 'tourist attraction' as query
+    query = f"{city} tourist attraction"
+    query_embedding = model.encode(query, convert_to_tensor=True)
+
+    # Score all raw links
+    scored = []
+    for link in raw_links:
+        score = util.cos_sim(query_embedding, model.encode(link, convert_to_tensor=True)).item()
+        scored.append((link, score))
+
+    # Sort by score
+    scored.sort(key=lambda x: x[1], reverse=True)
+
+    # If we have fewer than min_results after filtering, just return all
+    if len(scored) < min_results:
+        return [link for link, _ in scored]
+
+    # Otherwise, return the top_n
+    return [link for link, _ in scored[:top_n]]
+
 
 def get_links_from_city_page(city_formatted):
     """Scrapes only attraction/tourism/landmark sections from a city page."""
@@ -323,23 +410,32 @@ def get_links_from_city_page(city_formatted):
     except:
         return []
 
+def get_full_res_url(url):
+    if '/thumb/' in url:
+        parts = url.split('/thumb/')
+        path = parts[1].rsplit('/', 1)[0]  # remove the last size part
+        return parts[0] + '/' + path
+    return url
 
-def get_attractions(city_name):
+
+def get_attractions(city_name, min_results=10, top_n=100):
     city = City.objects.filter(name__iexact=city_name).first()
     if city:
         print(f"✅ Using cached data for {city_name}")
         return [
-            {"name": a.name, "url": a.url, "images": a.image_urls, 'lat': a.lat, 'lon': a.lon}
+            {"name": a.name, "url": a.url, "images": a.image_urls,
+             "lat": a.lat, "lon": a.lon,
+             "city_lat": city.citylat, "city_lon": city.citylon}
             for a in city.attractions.all()
         ]
 
     print(f"🌐 Scraping Wikipedia for {city_name}")
     city_formatted = city_name.replace(" ", "_")
 
-    # Try multiple methods in order of accuracy
-    links = get_links_from_category(city_formatted)
+    # Priority: list page → category page → city page
+    links = get_links_from_list_page(city_formatted)
     if not links:
-        links = get_links_from_list_page(city_formatted)
+        links = get_links_from_category(city_formatted)
     if not links:
         links = get_links_from_city_page(city_formatted)
 
@@ -349,15 +445,25 @@ def get_attractions(city_name):
 
     print(f"🔗 Found {len(links)} raw links before filtering.")
 
-    seen_titles = set()
-    filtered_links = []
+    # ---- Improved Filtering ----
+    query = f"{city_name} tourist attraction"
+    query_embedding = model.encode(query, convert_to_tensor=True)
+
+    scored = []
     for url, title in links:
-        if title not in seen_titles and is_relevant(title):
-            seen_titles.add(title)
-            filtered_links.append((url, title))
+        score = util.cos_sim(query_embedding, model.encode(title, convert_to_tensor=True)).item()
+        scored.append(((url, title), score))
+
+    scored.sort(key=lambda x: x[1], reverse=True)
+
+    if len(scored) < min_results:
+        filtered_links = [item[0] for item in scored]
+    else:
+        filtered_links = [item[0] for item in scored[:top_n]]
 
     print(f"✅ {len(filtered_links)} attractions after filtering.")
 
+    # ---- Scrape details for each attraction ----
     attraction = {}
     lat_dd = lon_dd = None
     map_url = "https://upload.wikimedia.org/wikipedia/commons/thumb/1/1a/Edmonton_agglomeration-blank.svg/250px-Edmonton_agglomeration-blank.svg.png"
@@ -368,13 +474,11 @@ def get_attractions(city_name):
             res = requests.get(full_url)
             sub_soup = BeautifulSoup(res.content, 'html.parser')
 
-            if title == city_name:
-                city_lat, city_lon = getCityCoordinates(city_name, sub_soup)
-                # city_lat, city_lon = get_city_lat_lon(city_formatted)
-
-                if city_lat and city_lon:
-                    lat_dd = dms_to_dd(city_lat.text)
-                    lon_dd = dms_to_dd(city_lon.text)
+            # if title == city_name:
+            city_lat, city_lon = getCityCoordinates(city_name, sub_soup)
+            if city_lat and city_lon:
+                lat_dd = dms_to_dd(city_lat.text)
+                lon_dd = dms_to_dd(city_lon.text)
 
             latOG = sub_soup.find('span', class_='latitude')
             lonOG = sub_soup.find('span', class_='longitude')
@@ -400,6 +504,7 @@ def get_attractions(city_name):
         except Exception as e:
             print(f"💥 Error fetching {title}: {e}")
 
+    # ---- Save to DB ----
     with transaction.atomic():
         city = City.objects.create(name=city_name, citylat=lat_dd, citylon=lon_dd)
         for name, info in attraction.items():
@@ -415,9 +520,105 @@ def get_attractions(city_name):
     print(f"✅ Saved {len(attraction)} attractions for {city_name}")
     return [
         {"name": name, "url": info["url"], "images": info["images"],
-         'lat': info["lat"], 'lon': info["lon"], 'city_lat': info["city_lat"], 'city_lon': info["city_lon"]}
+         'lat': info["lat"], 'lon': info["lon"],
+         'city_lat': info["city_lat"], 'city_lon': info["city_lon"]}
         for name, info in attraction.items()
     ]
+
+# def get_attractions(city_name):
+#     city = City.objects.filter(name__iexact=city_name).first()
+#     if city:
+#         print(f"✅ Using cached data for {city_name}")
+#         return [
+#             {"name": a.name, "url": a.url, "images": a.image_urls, 'lat': a.lat, 'lon': a.lon}
+#             for a in city.attractions.all()
+#         ]
+#
+#     print(f"🌐 Scraping Wikipedia for {city_name}")
+#     city_formatted = city_name.replace(" ", "_")
+#
+#     # Try multiple methods in order of accuracy
+#     links = get_links_from_category(city_formatted)
+#     if not links:
+#         links = get_links_from_list_page(city_formatted)
+#     if not links:
+#         links = get_links_from_city_page(city_formatted)
+#
+#     if not links:
+#         print("⚠️ No attractions found.")
+#         return []
+#
+#     print(f"🔗 Found {len(links)} raw links before filtering.")
+#
+#     seen_titles = set()
+#     filtered_links = []
+#     for url, title in links:
+#         if title not in seen_titles and is_relevant(title):
+#             seen_titles.add(title)
+#             filtered_links.append((url, title))
+#
+#     print(f"✅ {len(filtered_links)} attractions after filtering.")
+#
+#     attraction = {}
+#     lat_dd = lon_dd = None
+#     map_url = "https://upload.wikimedia.org/wikipedia/commons/thumb/1/1a/Edmonton_agglomeration-blank.svg/250px-Edmonton_agglomeration-blank.svg.png"
+#     dot_url = "https://upload.wikimedia.org/wikipedia/commons/thumb/0/0c/Red_pog.svg/20px-Red_pog.svg.png"
+#
+#     for full_url, title in filtered_links:
+#         try:
+#             res = requests.get(full_url)
+#             sub_soup = BeautifulSoup(res.content, 'html.parser')
+#
+#             if title == city_name:
+#                 city_lat, city_lon = getCityCoordinates(city_name, sub_soup)
+#                 # city_lat, city_lon = get_city_lat_lon(city_formatted)
+#
+#                 if city_lat and city_lon:
+#                     lat_dd = dms_to_dd(city_lat.text)
+#                     lon_dd = dms_to_dd(city_lon.text)
+#
+#             latOG = sub_soup.find('span', class_='latitude')
+#             lonOG = sub_soup.find('span', class_='longitude')
+#             if not latOG or not lonOG:
+#                 continue
+#             lat = dms_to_dd(latOG.text)
+#             lon = dms_to_dd(lonOG.text)
+#
+#             img_urls = getAttractionImages(sub_soup, '.infobox-image img', map_url, dot_url)
+#             img_urls2 = getAttractionImages(sub_soup, 'a.mw-file-description img', map_url, dot_url)
+#             combinedImgUrls = list(set(img_urls + img_urls2))
+#             if not combinedImgUrls:
+#                 continue
+#
+#             attraction[title] = {
+#                 'url': full_url,
+#                 'images': combinedImgUrls,
+#                 'lat': lat,
+#                 'lon': lon,
+#                 'city_lat': lat_dd,
+#                 'city_lon': lon_dd
+#             }
+#         except Exception as e:
+#             print(f"💥 Error fetching {title}: {e}")
+#
+#     with transaction.atomic():
+#         city = City.objects.create(name=city_name, citylat=lat_dd, citylon=lon_dd)
+#         for name, info in attraction.items():
+#             Attraction.objects.create(
+#                 city=city,
+#                 name=name,
+#                 url=info['url'],
+#                 image_urls=info['images'],
+#                 lat=info['lat'],
+#                 lon=info['lon'],
+#             )
+#
+#     print(f"✅ Saved {len(attraction)} attractions for {city_name}")
+#     return [
+#         {"name": name, "url": info["url"], "images": info["images"],
+#          'lat': info["lat"], 'lon': info["lon"], 'city_lat': info["city_lat"], 'city_lon': info["city_lon"]}
+#         for name, info in attraction.items()
+#     ]
 
 
 # --------------
