@@ -1,29 +1,14 @@
 from fastapi.middleware.cors import CORSMiddleware
-from flask import jsonify
-
-from scrape import get_attractions  # Django-dependent function
+from scrape import get_attractions
 from cityVerifier import find_closest_city
 from typing import List
-from backend.models import UserProfile, FinalItinerary  # or wherever your UserProfile is
-from fastapi import FastAPI, HTTPException
-from pydantic import BaseModel
-from django.contrib.auth.models import User
-from fastapi.concurrency import run_in_threadpool
+from backend.models import UserProfile
 from fastapi import FastAPI
 from django.contrib.auth import authenticate
-from datetime import date  # ✅ Needed for date parsing
-# from backend.utils import save_daywise_trip
+from datetime import date
 from fastapi import APIRouter, Request
 from backend.utils import save_trip_logic
 from backend.utils import get_saved_trip_data
-from fastapi import HTTPException
-from fastapi import HTTPException
-from backend.models import PastTrips, User
-from fastapi.concurrency import run_in_threadpool
-from fastapi import APIRouter, HTTPException
-from asgiref.sync import sync_to_async
-from starlette.concurrency import run_in_threadpool
-from django.contrib.auth.models import User
 from backend.models import FinalItinerary
 from sendOTP import send_otp
 from pydantic import BaseModel
@@ -200,21 +185,6 @@ async def get_user_trips(username: str):
 
 class OTPRequest(BaseModel):
     username: str
-#
-# @app.post("/api/send_otp/")
-# async def send_otp_endpoint(data: OTPRequest):
-#     async def logic():
-#         try:
-#             user = User.objects.get(username=data.username)
-#             otp = send_otp(user.email)
-#             print(f"OTP sent to {user.email}: {otp}")  # ⚠️ For debugging only
-#             return {"message": f"OTP sent to {user.email}", "otp": otp}  # ❗ Remove OTP from response in production
-#         except User.DoesNotExist:
-#             raise HTTPException(status_code=404, detail="User not found")
-#         except Exception as e:
-#             raise HTTPException(status_code=500, detail=str(e))
-#
-#     return await run_in_threadpool(logic)
 
 @app.post("/api/send_otp/")
 async def send_otp_endpoint(data: OTPRequest):

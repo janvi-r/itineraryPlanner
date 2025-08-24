@@ -43,7 +43,7 @@ class FinalItinerary(models.Model):
 
     class Meta:
         app_label = 'backend'
-        unique_together = ('user', 'city', 'day')  # so you don’t duplicate a day
+        unique_together = ('user', 'city', 'day')
 
 
 

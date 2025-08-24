@@ -13,9 +13,6 @@ import {
 } from "react-native";
 import React, {useState} from "react";
 
-//import AsyncStorage from '@react-native-async-storage/async-storage';
-
-
 const Login = ({navigation}) => {
     const [username, setUsername] = useState("");
     const [password, setPassword] = useState("");
@@ -44,12 +41,6 @@ const Login = ({navigation}) => {
                 // Example: data might contain token if using token auth
                 Alert.alert("Success", "Logged in successfully!");
                 console.log("Token:", data.token);
-                //await AsyncStorage.setItem('userToken', data.token);
-
-
-                // Note to self: We left for now - do not know if we also need to get rid of the token when we logout - fix at end
-                // rn the log in is not persistent meaning if we reload the app the user will have to log in again - to fix this we have to store the token in our memory whihc we do not do. asyncStorage is great if we can get it to work. also vice versa for logout, we have to get ride of the token from memory.
-
 
                 navigation.reset({
                     index: 0,
